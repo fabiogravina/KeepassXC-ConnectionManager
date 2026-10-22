@@ -7,6 +7,9 @@ Solo dati inventati: mai credenziali reali, mai copie dei database personali (ch
 - `fixture.kdbx`: database generato dall'XML. keepassxc-cli 2.7.12 crea solo KDBX 3.1 (AES-KDF).
   Password `test`, key file `fixture.keyx`.
 - `fixture.keyx`: key file generato apposta per le fixture, non usato da nessun altro database.
+- `fixture-casi.xml` / `fixture-casi.kdbx`: casi limite dell'analisi di sicurezza (voce scaduta con lo
+  stesso percorso di una valida, titolo `--all`), stessa password e stesso key file. Si rigenera
+  come `fixture.kdbx`, sostituendo i nomi dei file.
 - `fixture-kdbx4.kdbx` (facoltativo): KDBX 4 con Argon2, per il test di sblocco KDBX 4. Se manca,
   quel test viene saltato.
 

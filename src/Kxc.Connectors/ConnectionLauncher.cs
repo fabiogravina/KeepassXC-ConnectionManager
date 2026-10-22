@@ -39,7 +39,7 @@ public sealed class ConnectionLauncher : IConnectionLauncher, IDisposable
     {
         ArgumentNullException.ThrowIfNull(entry);
 
-        if (!entry.CanConnect || !entry.Protocols.HasFlag(protocol) && !IsSftpFromSsh(entry, protocol))
+        if (!entry.CanConnectWith(protocol) || !entry.Protocols.HasFlag(protocol) && !IsSftpFromSsh(entry, protocol))
         {
             throw new ConnectionException(ConnectionError.InvalidEntry, $"La voce non permette {protocol}.");
         }

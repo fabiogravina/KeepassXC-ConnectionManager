@@ -73,11 +73,38 @@ public class SshAndSftpConnectorTests
     }
 
     [Fact]
-    public void Semicolons_are_escaped_for_windows_terminal()
+    public void Semicolons_are_escaped_and_the_title_is_cleaned_for_windows_terminal()
     {
-        var arguments = WindowsOpenSshConnector.TerminalArguments("A;B", "ssh.exe", ["-o", "User=a;b"]);
+        var arguments = WindowsOpenSshConnector.TerminalArguments("A;\"B\\`\u0007C", "ssh.exe", ["-o", "Opzione=a;b"]);
 
-        Assert.Equal(["-w", "new", "nt", "--title", "A\\;B", "ssh.exe", "-o", "User=a\\;b"], arguments);
+        Assert.Equal(["-w", "new", "nt", "--title", "ABC", "ssh.exe", "-o", "Opzione=a\\;b"], arguments);
+    }
+
+    [Fact]
+    public void Arguments_with_quotes_never_reach_windows_terminal()
+    {
+        // S1: wt.exe ricompone la riga di comando e spezza gli argomenti con virgolette (prova del 22/10/2026).
+        var error = Assert.Throws<ConnectionException>(() =>
+            WindowsOpenSshConnector.TerminalArguments("T", "ssh.exe", ["-o", "User=x\" -oProxyCommand=calc \""]));
+
+        Assert.Equal(ConnectionError.InvalidEntry, error.Error);
+    }
+
+    [Theory]
+    [InlineData("x\" -oProxyCommand=calc \"")]
+    [InlineData("a b")]
+    [InlineData("$(calc)")]
+    [InlineData("-oProxyCommand=calc")]
+    public async Task Unsafe_ssh_user_names_are_refused_before_reading_the_password(string user)
+    {
+        var launcher = new RecordingLauncher();
+        var connector = OpenSsh(ConnectionProtocols.Ssh, launcher);
+
+        var error = await Assert.ThrowsAsync<ConnectionException>(() => connector.LaunchAsync(Entry(user: user), TestContext.Current.CancellationToken));
+
+        Assert.Equal(ConnectionError.InvalidEntry, error.Error);
+        Assert.Empty(launcher.Started);
+        Assert.Null(connector.LastServer);
     }
 
     [Fact]

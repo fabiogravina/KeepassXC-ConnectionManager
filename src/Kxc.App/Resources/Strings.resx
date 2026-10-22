@@ -56,7 +56,7 @@
   <data name="Detail_PasswordNote" xml:space="preserve"><value>The password stays in KeePassXC: it is never shown or copied.</value></data>
   <data name="Warning_MissingHost" xml:space="preserve"><value>Host missing: add the Host field or the URL to this entry in KeePassXC.</value></data>
   <data name="Warning_InvalidData" xml:space="preserve"><value>Invalid host, port, user or domain: fix them in KeePassXC.</value></data>
-  <data name="Warning_AmbiguousPath" xml:space="preserve"><value>Another entry has the same name in the same folder: rename one of them in KeePassXC.</value></data>
+  <data name="Warning_AmbiguousPath" xml:space="preserve"><value>Another entry, possibly expired, has the same name in the same folder: rename one of them in KeePassXC.</value></data>
   <data name="Status_Unlocked" xml:space="preserve"><value>Unlocked</value></data>
   <data name="Status_LocksIn" xml:space="preserve"><value>locks in {0} min</value></data>
   <data name="Status_LocksInUnderAMinute" xml:space="preserve"><value>locks in less than a minute</value></data>
@@ -129,4 +129,5 @@
   <data name="Status_ReloadRetrying" xml:space="preserve"><value>the file is syncing, trying again shortly…</value></data>
   <data name="Status_ReloadFailed" xml:space="preserve"><value>list not updated. {0}</value></data>
   <data name="Status_CredentialsChanged" xml:space="preserve"><value>The database password or key file changed: unlock it again.</value></data>
+  <data name="Warning_UnsafeSshUser" xml:space="preserve"><value>The user name contains characters not allowed for SSH and SFTP (spaces, quotes, symbols): fix it in KeePassXC.</value></data>
 </root>

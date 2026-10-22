@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Casi limite dell'analisi di sicurezza (S2, S9), dati inventati. Password del database: "test";
+  key file: fixture.keyx.
+  - Clienti/Server: una voce scaduta e una valida con lo stesso percorso; keepassxc-cli restituisce
+    la prima, cioè la scaduta.
+  - voce in radice il cui titolo è l'opzione "all" preceduta da due trattini: keepassxc-cli la
+    leggerebbe come opzione senza il separatore di fine opzioni.
+-->
+<KeePassFile>
+	<Meta>
+		<Generator>KeePassXC</Generator>
+		<DatabaseName>Fixture casi limite</DatabaseName>
+	</Meta>
+	<Root>
+		<Group>
+			<UUID>AAAAAAAAAAAAAAAAAAAAAQ==</UUID>
+			<Name>Root</Name>
+			<Group>
+				<UUID>AAAAAAAAAAAAAAAAAAAAAg==</UUID>
+				<Name>Clienti</Name>
+				<Entry>
+					<UUID>AAAAAAAAAAAAAAAAAAAHAQ==</UUID>
+					<Tags>rdp</Tags>
+					<Times><Expires>True</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+					<String><Key>Title</Key><Value>Server</Value></String>
+					<String><Key>UserName</Key><Value>vecchio</Value></String>
+					<String><Key>Password</Key><Value ProtectInMemory="True">password-della-voce-SCADUTA</Value></String>
+					<String><Key>Host</Key><Value>vecchio.example</Value></String>
+				</Entry>
+				<Entry>
+					<UUID>AAAAAAAAAAAAAAAAAAAHAg==</UUID>
+					<Tags>rdp</Tags>
+					<Times><Expires>False</Expires></Times>
+					<String><Key>Title</Key><Value>Server</Value></String>
+					<String><Key>UserName</Key><Value>nuovo</Value></String>
+					<String><Key>Password</Key><Value ProtectInMemory="True">password-della-voce-VALIDA</Value></String>
+					<String><Key>Host</Key><Value>nuovo.example</Value></String>
+				</Entry>
+			</Group>
+			<Entry>
+				<UUID>AAAAAAAAAAAAAAAAAAAHAw==</UUID>
+				<Tags>ssh</Tags>
+				<Times><Expires>False</Expires></Times>
+				<String><Key>Title</Key><Value>--all</Value></String>
+				<String><Key>UserName</Key><Value>prova</Value></String>
+				<String><Key>Password</Key><Value ProtectInMemory="True">pw-trattino</Value></String>
+				<String><Key>Host</Key><Value>trattino.example</Value></String>
+			</Entry>
+		</Group>
+	</Root>
+</KeePassFile>

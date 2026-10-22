@@ -52,7 +52,7 @@ public sealed partial class EntryItemViewModel : ViewModelBase
 
     public IReadOnlyList<ProtocolButtonViewModel> Protocols { get; }
 
-    public string? WarningText => Messages.For(Entry.Warning);
+    public string? WarningText => Messages.For(Entry.VisibleWarning);
 
     public bool HasWarning => WarningText is not null;
 
@@ -83,5 +83,5 @@ public sealed class ProtocolButtonViewModel
 
     public string AccessibleName => Strings.Main_Connect + " " + Messages.ProtocolName(Protocol) + " " + Owner.DisplayTitle;
 
-    public bool CanConnect => Owner.Entry.CanConnect;
+    public bool CanConnect => Owner.Entry.CanConnectWith(Protocol);
 }

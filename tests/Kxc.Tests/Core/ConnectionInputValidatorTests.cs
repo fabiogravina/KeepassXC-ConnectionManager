@@ -45,6 +45,26 @@ public class ConnectionInputValidatorTests
     }
 
     [Theory]
+    [InlineData("", true)]
+    [InlineData("pi", true)]
+    [InlineData("admin.rossi", true)]
+    [InlineData("ROSSI\\admin", true)]
+    [InlineData("admin@rossi.example", true)]
+    [InlineData("user+backup", true)]
+    [InlineData("x\" -oProxyCommand=calc \"", false)]
+    [InlineData("a b", false)]
+    [InlineData("$(calc)", false)]
+    [InlineData("a;b", false)]
+    [InlineData("a`b`", false)]
+    [InlineData("%r", false)]
+    [InlineData("-l", false)]
+    [InlineData("è", false)]
+    public void Ssh_user_names_allow_only_safe_characters(string user, bool valid)
+    {
+        Assert.Equal(valid, ConnectionInputValidator.IsValidSshUserName(user));
+    }
+
+    [Theory]
     [InlineData("ROSSI", true)]
     [InlineData("rossi.local", true)]
     [InlineData("-x", false)]

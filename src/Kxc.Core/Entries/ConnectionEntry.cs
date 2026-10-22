@@ -35,9 +35,22 @@ public sealed record ConnectionEntry
     /// </summary>
     public bool UsesSshAgent { get; init; }
 
+    /// <summary>Problema che blocca tutti i protocolli della voce.</summary>
     public EntryWarning Warning { get; init; }
 
+    /// <summary>Problema che blocca solo SSH e SFTP (per esempio il nome utente).</summary>
+    public EntryWarning SshWarning { get; init; }
+
     public bool CanConnect => Warning == EntryWarning.None;
+
+    public bool CanConnectWith(ConnectionProtocols protocol) =>
+        CanConnect && (protocol == ConnectionProtocols.Rdp || SshWarning == EntryWarning.None);
+
+    /// <summary>Avviso da mostrare: prima quello della voce, poi quello di SSH se la voce ha SSH o SFTP.</summary>
+    public EntryWarning VisibleWarning =>
+        Warning != EntryWarning.None ? Warning
+        : (Protocols & (ConnectionProtocols.Ssh | ConnectionProtocols.Sftp)) != 0 ? SshWarning
+        : EntryWarning.None;
 
     public ConnectionProtocols DefaultProtocol => ConnectionProtocolRules.Default(Protocols);
 

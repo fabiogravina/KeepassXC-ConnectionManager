@@ -18,6 +18,7 @@ internal static class Messages
         VaultError.UnsupportedFormat => Strings.Error_UnsupportedFormat,
         VaultError.InvalidCredentials => Strings.Error_InvalidCredentials,
         VaultError.EntryNotFound => Strings.Error_EntryNotFound,
+        VaultError.EntryMismatch => Strings.Warning_AmbiguousPath,
         VaultError.Locked => Strings.Error_Locked,
         VaultError.Timeout => Strings.Error_Timeout,
         _ => Strings.Error_ReadFailed,
@@ -41,6 +42,7 @@ internal static class Messages
         EntryWarning.MissingHost => Strings.Warning_MissingHost,
         EntryWarning.InvalidConnectionData => Strings.Warning_InvalidData,
         EntryWarning.AmbiguousPath => Strings.Warning_AmbiguousPath,
+        EntryWarning.UnsafeSshUserName => Strings.Warning_UnsafeSshUser,
         _ => null,
     };
 

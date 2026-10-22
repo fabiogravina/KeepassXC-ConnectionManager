@@ -13,6 +13,9 @@ public enum VaultError
     InvalidCredentials,
 
     EntryNotFound,
+
+    /// <summary>keepassxc-cli ha restituito un'altra voce con lo stesso percorso (S2): niente password.</summary>
+    EntryMismatch,
     Locked,
     Timeout,
     ReadFailed,

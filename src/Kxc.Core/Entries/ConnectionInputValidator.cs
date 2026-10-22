@@ -40,6 +40,18 @@ public static partial class ConnectionInputValidator
             && !userName.Any(char.IsControl);
     }
 
+    /// <summary>
+    /// Nome utente per SSH e SFTP: solo lettere, cifre e <c>. _ @ \ + -</c>, senza '-' iniziale.
+    /// Windows Terminal ricompone la riga di comando di ssh senza rispettare le virgolette, e un
+    /// <c>ProxyCommand</c> con <c>%r</c> lo passerebbe a una shell: qualsiasi altro carattere
+    /// potrebbe aggiungere opzioni a ssh (S1 dell'analisi di sicurezza). Vuoto: ssh usa l'utente locale.
+    /// </summary>
+    public static bool IsValidSshUserName(string userName)
+    {
+        ArgumentNullException.ThrowIfNull(userName);
+        return userName.Length == 0 || SshUserNameRegex().IsMatch(userName);
+    }
+
     public static bool IsValidDomain(string domain)
     {
         ArgumentNullException.ThrowIfNull(domain);
@@ -49,6 +61,9 @@ public static partial class ConnectionInputValidator
     // Etichette DNS da 1 a 63 caratteri: lettere, cifre e trattini non iniziali né finali.
     [GeneratedRegex(@"^(?=.{1,253}$)[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*\.?$", RegexOptions.CultureInvariant)]
     private static partial Regex HostNameRegex();
+
+    [GeneratedRegex(@"^[A-Za-z0-9._@\\+][A-Za-z0-9._@\\+-]{0,127}$", RegexOptions.CultureInvariant)]
+    private static partial Regex SshUserNameRegex();
 
     // Nome NetBIOS o dominio DNS.
     [GeneratedRegex(@"^[A-Za-z0-9][A-Za-z0-9._-]*$", RegexOptions.CultureInvariant)]

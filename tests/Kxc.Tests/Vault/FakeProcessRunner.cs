@@ -28,13 +28,16 @@ internal sealed class FakeProcessRunner : IProcessRunner
         return new ProcessOutcome(exitCode, stderr);
     }
 
-    /// <summary>Risposte tipiche di keepassxc-cli 2.7.12.</summary>
-    public static FakeProcessRunner KeePassXc(string exportXml, string password = "segreto", int exportExitCode = 0) => new(request =>
+    /// <summary>
+    /// Risposte tipiche di keepassxc-cli 2.7.12. "show -a Uuid -a Password" stampa una riga per
+    /// attributo; una password vuota non stampa nessuna riga.
+    /// </summary>
+    public static FakeProcessRunner KeePassXc(string exportXml, string password = "segreto", int exportExitCode = 0, Guid? showUuid = null) => new(request =>
         request.Arguments[0] switch
         {
             "--version" => (0, "2.7.12\n", string.Empty),
             "export" => exportExitCode == 0 ? (0, exportXml, string.Empty) : (exportExitCode, string.Empty, string.Empty),
-            "show" => (0, password + "\n", string.Empty),
+            "show" => (0, $"{{{showUuid ?? Guid.Empty}}}\n" + (password.Length == 0 ? string.Empty : password + "\n"), string.Empty),
             _ => (2, string.Empty, "comando inatteso"),
         });
 }

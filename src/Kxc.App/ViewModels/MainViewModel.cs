@@ -206,7 +206,7 @@ public sealed partial class MainViewModel : ViewModelBase
     private async Task ConnectAsync(EntryItemViewModel item, ConnectionProtocols protocol)
     {
         var name = Messages.ProtocolName(protocol);
-        if (!item.Entry.CanConnect)
+        if (!item.Entry.CanConnectWith(protocol))
         {
             ConnectionStatus = Messages.Format(Strings.Status_CannotConnect, item.DisplayTitle, item.WarningText ?? string.Empty);
             return;

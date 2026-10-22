@@ -92,6 +92,38 @@ public class ConnectionCatalogTests
     }
 
     [Fact]
+    public void Expired_entry_with_the_same_path_makes_the_valid_one_ambiguous()
+    {
+        // S2: keepassxc-cli restituirebbe la password della voce scaduta (prova del 22/10/2026).
+        var result = ConnectionCatalog.Build(
+            [Entry(title: "Server", expiresAt: Now.AddDays(-1)), Entry(title: "Server")], Now);
+
+        Assert.Equal(EntryWarning.AmbiguousPath, Assert.Single(result).Warning);
+    }
+
+    [Fact]
+    public void Unsafe_ssh_user_blocks_ssh_and_sftp_but_not_rdp()
+    {
+        var entry = ConnectionCatalog.Build([Entry(tags: "rdp,ssh,sftp", userName: "x\" -oProxyCommand=calc \"")], Now)[0];
+
+        Assert.Equal(EntryWarning.None, entry.Warning);
+        Assert.Equal(EntryWarning.UnsafeSshUserName, entry.SshWarning);
+        Assert.Equal(EntryWarning.UnsafeSshUserName, entry.VisibleWarning);
+        Assert.True(entry.CanConnectWith(ConnectionProtocols.Rdp));
+        Assert.False(entry.CanConnectWith(ConnectionProtocols.Ssh));
+        Assert.False(entry.CanConnectWith(ConnectionProtocols.Sftp));
+    }
+
+    [Fact]
+    public void Rdp_only_entry_does_not_show_the_ssh_warning()
+    {
+        var entry = ConnectionCatalog.Build([Entry(tags: "rdp", userName: "Mario Rossi")], Now)[0];
+
+        Assert.Equal(EntryWarning.None, entry.VisibleWarning);
+        Assert.True(entry.CanConnectWith(ConnectionProtocols.Rdp));
+    }
+
+    [Fact]
     public void Ssh_agent_is_used_only_when_keepassxc_agent_settings_are_attached()
     {
         var result = ConnectionCatalog.Build(

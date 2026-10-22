@@ -41,7 +41,7 @@ public class KeePassXcVaultServiceTests
         var export = runner.Calls.Single(c => c.Request.Arguments[0] == "export");
         Assert.Equal(Fixture.Utf8("pässword\n"), export.StandardInput);
         Assert.DoesNotContain(export.Request.Arguments, a => a.Contains("pässword", StringComparison.Ordinal));
-        Assert.Equal(["export", "-q", "-k", Fixture.KeyFilePath, "-f", "xml", Fixture.DatabasePath], export.Request.Arguments);
+        Assert.Equal(["export", "-q", "-k", Fixture.KeyFilePath, "-f", "xml", "--", Fixture.DatabasePath], export.Request.Arguments);
         Assert.True(vault.IsUnlocked);
     }
 
@@ -113,7 +113,7 @@ public class KeePassXcVaultServiceTests
     [Fact]
     public async Task Entry_password_is_read_on_demand_without_trailing_newline()
     {
-        var runner = FakeProcessRunner.KeePassXc(ExportXml, password: "gw-secret");
+        var runner = FakeProcessRunner.KeePassXc(ExportXml, password: "gw-secret", showUuid: Gateway.Uuid);
         using var vault = Service(runner);
         await vault.UnlockAsync(Fixture.Credentials(), TestContext.Current.CancellationToken);
 
@@ -121,8 +121,46 @@ public class KeePassXcVaultServiceTests
 
         Assert.True(password.ContentEquals(Fixture.Utf8("gw-secret")));
         var show = runner.Calls.Single(c => c.Request.Arguments[0] == "show");
-        Assert.Equal("Clienti/Rossi Srl/Gateway", show.Request.Arguments[^1]);
-        Assert.Contains("-s", show.Request.Arguments);
+        Assert.Equal(
+            ["show", "-q", "-k", Fixture.KeyFilePath, "-s", "-a", "Uuid", "-a", "Password", "--", Fixture.DatabasePath, "Clienti/Rossi Srl/Gateway"],
+            show.Request.Arguments);
+    }
+
+    [Fact]
+    public async Task Password_of_another_entry_with_the_same_path_is_refused()
+    {
+        // S2: keepassxc-cli restituisce la prima voce con quel percorso, per esempio una scaduta.
+        var runner = FakeProcessRunner.KeePassXc(ExportXml, password: "password-della-voce-SCADUTA", showUuid: Guid.NewGuid());
+        using var vault = Service(runner);
+        await vault.UnlockAsync(Fixture.Credentials(), TestContext.Current.CancellationToken);
+
+        var error = await Assert.ThrowsAsync<VaultException>(() => vault.ReadPasswordAsync(Gateway, TestContext.Current.CancellationToken));
+
+        Assert.Equal(VaultError.EntryMismatch, error.Error);
+    }
+
+    [Fact]
+    public async Task Empty_password_is_read_as_empty()
+    {
+        var runner = FakeProcessRunner.KeePassXc(ExportXml, password: string.Empty, showUuid: Gateway.Uuid);
+        using var vault = Service(runner);
+        await vault.UnlockAsync(Fixture.Credentials(), TestContext.Current.CancellationToken);
+
+        using var password = await vault.ReadPasswordAsync(Gateway, TestContext.Current.CancellationToken);
+
+        Assert.True(password.IsEmpty);
+    }
+
+    [Fact]
+    public async Task Multi_line_password_keeps_its_inner_newlines()
+    {
+        var runner = FakeProcessRunner.KeePassXc(ExportXml, password: "riga1\nriga2", showUuid: Gateway.Uuid);
+        using var vault = Service(runner);
+        await vault.UnlockAsync(Fixture.Credentials(), TestContext.Current.CancellationToken);
+
+        using var password = await vault.ReadPasswordAsync(Gateway, TestContext.Current.CancellationToken);
+
+        Assert.True(password.ContentEquals(Fixture.Utf8("riga1\nriga2")));
     }
 
     [Fact]
@@ -154,7 +192,7 @@ public class KeePassXcVaultServiceTests
     [Fact]
     public async Task Only_read_commands_are_used()
     {
-        var runner = FakeProcessRunner.KeePassXc(ExportXml);
+        var runner = FakeProcessRunner.KeePassXc(ExportXml, showUuid: Gateway.Uuid);
         using var vault = Service(runner);
         await vault.UnlockAsync(Fixture.Credentials(), TestContext.Current.CancellationToken);
         await vault.ReloadAsync(TestContext.Current.CancellationToken);

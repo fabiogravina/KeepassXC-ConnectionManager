@@ -88,23 +88,31 @@ public sealed class KeePassXcVaultService : IVaultService, IDisposable
 
         var cli = await ResolveCliAsync(cancellationToken).ConfigureAwait(false);
         var credentials = CurrentCredentials();
-        var arguments = KeePassXcCommands.ShowPassword(credentials.DatabasePath, credentials.KeyFilePath, credentials.Password is not null, entry.EntryPath);
+        var arguments = KeePassXcCommands.ShowUuidAndPassword(credentials.DatabasePath, credentials.KeyFilePath, credentials.Password is not null, entry.EntryPath);
 
-        SecretBuffer? password = null;
+        ShownEntry? shown = null;
         var outcome = await RunWithCredentialsAsync(
             new ProcessRequest(cli, arguments) { Timeout = ShowTimeout },
-            async (stdout, ct) => password = await ReadSecretAsync(stdout, ct).ConfigureAwait(false),
+            async (stdout, ct) => shown = await ReadUuidAndSecretAsync(stdout, ct).ConfigureAwait(false),
             cancellationToken).ConfigureAwait(false);
 
-        if (outcome.ExitCode != 0 || password is null)
+        if (outcome.ExitCode != 0 || shown is null)
         {
-            password?.Dispose();
+            shown?.Password.Dispose();
             throw outcome.ExitCode != 0 && outcome.StandardError.Length > 0
                 ? new VaultException(VaultError.EntryNotFound, "keepassxc-cli non ha trovato la voce.")
                 : MapFailure(outcome);
         }
 
-        return password;
+        // S2: keepassxc-cli restituisce la prima voce con quel percorso; se non è quella scelta, la
+        // sua password non deve arrivare all'host di questa voce.
+        if (shown.Uuid != entry.Uuid)
+        {
+            shown.Password.Dispose();
+            throw new VaultException(VaultError.EntryMismatch, "keepassxc-cli ha letto una voce diversa da quella scelta.");
+        }
+
+        return shown.Password;
     }
 
     public void Lock()
@@ -277,8 +285,13 @@ public sealed class KeePassXcVaultService : IVaultService, IDisposable
             ? new VaultException(VaultError.InvalidCredentials, "Password o key file non corretti.")
             : new VaultException(VaultError.ReadFailed, $"keepassxc-cli è terminato con codice {outcome.ExitCode}.");
 
-    /// <summary>Legge stdout in un buffer bloccato e toglie l'a capo finale aggiunto da keepassxc-cli.</summary>
-    private static async Task<SecretBuffer> ReadSecretAsync(Stream stdout, CancellationToken cancellationToken)
+    private sealed record ShownEntry(Guid Uuid, SecretBuffer Password);
+
+    /// <summary>
+    /// Legge stdout di "show -a Uuid -a Password" in un buffer bloccato: la prima riga è l'UUID, il
+    /// resto la password, senza l'a capo finale. Una password vuota non stampa nessuna riga (fase 0).
+    /// </summary>
+    private static async Task<ShownEntry?> ReadUuidAndSecretAsync(Stream stdout, CancellationToken cancellationToken)
     {
         var buffer = GC.AllocateArray<byte>(MaxPasswordBytes, pinned: true);
         try
@@ -294,16 +307,26 @@ public sealed class KeePassXcVaultService : IVaultService, IDisposable
                 }
             }
 
-            if (total > 0 && buffer[total - 1] == '\n')
+            var newline = Array.IndexOf(buffer, (byte)'\n', 0, total);
+            var uuidEnd = newline < 0 ? total : newline;
+            var uuidText = Encoding.ASCII.GetString(buffer, 0, uuidEnd).Trim();
+            if (!Guid.TryParse(uuidText, out var uuid))
             {
-                total--;
-                if (total > 0 && buffer[total - 1] == '\r')
+                return null;
+            }
+
+            var start = newline < 0 ? total : newline + 1;
+            var end = total;
+            if (end > start && buffer[end - 1] == '\n')
+            {
+                end--;
+                if (end > start && buffer[end - 1] == '\r')
                 {
-                    total--;
+                    end--;
                 }
             }
 
-            return SecretBuffer.FromBytes(buffer.AsSpan(0, total));
+            return new ShownEntry(uuid, SecretBuffer.FromBytes(buffer.AsSpan(start, end - start)));
         }
         finally
         {

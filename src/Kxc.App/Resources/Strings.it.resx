@@ -55,7 +55,7 @@
   <data name="Detail_PasswordNote" xml:space="preserve"><value>La password resta in KeePassXC: non viene mai mostrata né copiata.</value></data>
   <data name="Warning_MissingHost" xml:space="preserve"><value>Manca l'host: aggiungi il campo Host o l'URL alla voce in KeePassXC.</value></data>
   <data name="Warning_InvalidData" xml:space="preserve"><value>Host, porta, utente o dominio non validi: correggili in KeePassXC.</value></data>
-  <data name="Warning_AmbiguousPath" xml:space="preserve"><value>Un'altra voce ha lo stesso nome nella stessa cartella: rinominane una in KeePassXC.</value></data>
+  <data name="Warning_AmbiguousPath" xml:space="preserve"><value>Un'altra voce, anche scaduta, ha lo stesso nome nella stessa cartella: rinominane una in KeePassXC.</value></data>
   <data name="Status_Unlocked" xml:space="preserve"><value>Sbloccato</value></data>
   <data name="Status_LocksIn" xml:space="preserve"><value>si blocca tra {0} min</value></data>
   <data name="Status_LocksInUnderAMinute" xml:space="preserve"><value>si blocca tra meno di un minuto</value></data>
@@ -128,4 +128,5 @@
   <data name="Status_ReloadRetrying" xml:space="preserve"><value>il file si sta sincronizzando, nuovo tentativo tra poco…</value></data>
   <data name="Status_ReloadFailed" xml:space="preserve"><value>elenco non aggiornato. {0}</value></data>
   <data name="Status_CredentialsChanged" xml:space="preserve"><value>La password o il key file del database sono cambiati: sbloccalo di nuovo.</value></data>
+  <data name="Warning_UnsafeSshUser" xml:space="preserve"><value>Il nome utente contiene caratteri non ammessi per SSH e SFTP (spazi, virgolette, simboli): correggilo in KeePassXC.</value></data>
 </root>

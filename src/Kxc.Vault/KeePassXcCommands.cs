@@ -5,17 +5,22 @@ namespace Kxc.Vault;
 
 /// <summary>
 /// Argomenti dei soli comandi di lettura usati (SEC-04). La password non compare mai qui: passa da
-/// stdin. Sempre -q, così la richiesta della password non finisce su stdout.
+/// stdin. Sempre -q, così la richiesta della password non finisce su stdout. "--" chiude le opzioni:
+/// una voce dal titolo "--all" verrebbe altrimenti letta come opzione (prova di S9).
 /// </summary>
 internal static partial class KeePassXcCommands
 {
     public static IReadOnlyList<string> Version() => ["--version"];
 
     public static IReadOnlyList<string> ExportXml(string databasePath, string? keyFilePath, bool hasPassword) =>
-        [.. Command("export", keyFilePath, hasPassword), "-f", "xml", databasePath];
+        [.. Command("export", keyFilePath, hasPassword), "-f", "xml", "--", databasePath];
 
-    public static IReadOnlyList<string> ShowPassword(string databasePath, string? keyFilePath, bool hasPassword, string entryPath) =>
-        [.. Command("show", keyFilePath, hasPassword), "-s", "-a", "Password", databasePath, entryPath];
+    /// <summary>
+    /// UUID e password della voce, in quest'ordine (una riga per attributo): l'UUID permette di
+    /// verificare che keepassxc-cli abbia letto proprio la voce scelta (S2).
+    /// </summary>
+    public static IReadOnlyList<string> ShowUuidAndPassword(string databasePath, string? keyFilePath, bool hasPassword, string entryPath) =>
+        [.. Command("show", keyFilePath, hasPassword), "-s", "-a", "Uuid", "-a", "Password", "--", databasePath, entryPath];
 
     /// <summary>Prima riga di "keepassxc-cli --version", per esempio "2.7.12".</summary>
     public static Version? ParseVersion(string output)

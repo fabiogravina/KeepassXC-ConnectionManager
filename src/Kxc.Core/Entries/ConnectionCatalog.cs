@@ -15,11 +15,13 @@ public static class ConnectionCatalog
     {
         ArgumentNullException.ThrowIfNull(entries);
 
-        var active = entries.Where(e => !IsExpired(e, now)).ToList();
+        var all = entries.ToList();
+        var active = all.Where(e => !IsExpired(e, now)).ToList();
 
-        // Il conteggio include anche le voci senza tag di protocollo: una qualsiasi voce con lo
-        // stesso percorso renderebbe ambigua la lettura della password con keepassxc-cli.
-        var pathCounts = active
+        // Il conteggio include le voci senza tag di protocollo e quelle scadute: keepassxc-cli le
+        // trova comunque, e con due voci omonime restituisce la prima (prova di S2: la password della
+        // voce scaduta). keepassxc-cli distingue maiuscole e minuscole, quindi il confronto è esatto.
+        var pathCounts = all
             .GroupBy(e => e.EntryPath, StringComparer.Ordinal)
             .ToDictionary(g => g.Key, g => g.Count(), StringComparer.Ordinal);
 
@@ -78,6 +80,7 @@ public static class ConnectionCatalog
             Notes = vault.Notes,
             Tags = ConnectionProtocolRules.SplitTags(vault.Tags),
             UsesSshAgent = vault.AttachmentNames.Contains(ConnectionEntry.SshAgentSettingsAttachment, StringComparer.Ordinal),
+            SshWarning = ConnectionInputValidator.IsValidSshUserName(vault.UserName) ? EntryWarning.None : EntryWarning.UnsafeSshUserName,
             Warning = warning,
         };
     }

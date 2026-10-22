@@ -79,6 +79,12 @@ public sealed class WindowsOpenSshConnector : IConnector
         ArgumentNullException.ThrowIfNull(entry);
         var host = entry.Host ?? throw new ConnectionException(ConnectionError.InvalidEntry, "Host mancante.");
 
+        // Difesa indipendente dal catalogo (S1): niente caratteri che ssh o wt.exe possano reinterpretare.
+        if (!ConnectionInputValidator.IsValidSshUserName(entry.UserName) || !ConnectionInputValidator.IsValidHost(host))
+        {
+            throw new ConnectionException(ConnectionError.InvalidEntry, "Nome utente o host non ammessi per SSH.");
+        }
+
         Kxc.Core.Security.SecretBuffer? password = null;
         if (!entry.UsesSshAgent && entry.UserName.Length > 0)
         {
@@ -102,19 +108,24 @@ public sealed class WindowsOpenSshConnector : IConnector
             [AskPassProtocol.ChannelVariable] = server.ChannelName,
         };
 
-        var clientArguments = ClientArguments(Protocol, entry, host);
-        var (file, arguments) = _terminalPath is null
-            ? (_clientPath, clientArguments)
-            : (_terminalPath, TerminalArguments(Title(entry), _clientPath, clientArguments));
-
         try
         {
+            var clientArguments = ClientArguments(Protocol, entry, host);
+            var (file, arguments) = _terminalPath is null
+                ? (_clientPath, clientArguments)
+                : (_terminalPath, TerminalArguments(Title(entry), _clientPath, clientArguments));
+
             _launcher.Start(file, arguments, environment).Dispose();
+        }
+        catch (ConnectionException)
+        {
+            await server.DisposeAsync().ConfigureAwait(false);
+            throw;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             await server.DisposeAsync().ConfigureAwait(false);
-            throw new ConnectionException(ConnectionError.ClientNotFound, $"{Path.GetFileName(file)} non si avvia.", ex);
+            throw new ConnectionException(ConnectionError.ClientNotFound, $"{Path.GetFileName(_terminalPath ?? _clientPath)} non si avvia.", ex);
         }
     }
 
@@ -160,12 +171,29 @@ public sealed class WindowsOpenSshConnector : IConnector
 
     /// <summary>
     /// wt.exe usa ';' per separare i comandi: va scritto come '\;' anche dentro gli argomenti.
+    /// wt.exe ricompone la riga di comando del client senza rispettare le virgolette (prova di S1):
+    /// un argomento con virgolette verrebbe spezzato, quindi viene rifiutato.
     /// </summary>
-    internal static IReadOnlyList<string> TerminalArguments(string title, string client, IReadOnlyList<string> clientArguments) =>
+    internal static IReadOnlyList<string> TerminalArguments(string title, string client, IReadOnlyList<string> clientArguments)
+    {
+        if (clientArguments.Any(a => a.Contains('"', StringComparison.Ordinal)))
+        {
+            throw new ConnectionException(ConnectionError.InvalidEntry, "Argomento non ammesso per Windows Terminal.");
+        }
+
+        return
         [
-            "-w", "new", "nt", "--title", EscapeForTerminal(title), client,
+            "-w", "new", "nt", "--title", EscapeForTerminal(SafeTitle(title)), client,
             .. clientArguments.Select(EscapeForTerminal),
         ];
+    }
+
+    /// <summary>Titolo della scheda senza caratteri che wt.exe potrebbe reinterpretare.</summary>
+    internal static string SafeTitle(string title)
+    {
+        var cleaned = new string(title.Where(c => !char.IsControl(c) && c is not ('"' or '\\' or ';' or '`')).ToArray()).Trim();
+        return cleaned.Length > 80 ? cleaned[..80] : cleaned;
+    }
 
     private static string EscapeForTerminal(string value) => value.Replace(";", "\\;", StringComparison.Ordinal);
 

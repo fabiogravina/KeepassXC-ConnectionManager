@@ -129,4 +129,5 @@
   <data name="Status_ReloadFailed" xml:space="preserve"><value>elenco non aggiornato. {0}</value></data>
   <data name="Status_CredentialsChanged" xml:space="preserve"><value>La password o il key file del database sono cambiati: sbloccalo di nuovo.</value></data>
   <data name="Warning_UnsafeSshUser" xml:space="preserve"><value>Il nome utente contiene caratteri non ammessi per SSH e SFTP (spazi, virgolette, simboli): correggilo in KeePassXC.</value></data>
+  <data name="Warning_UnsafeInstallation" xml:space="preserve"><value>La cartella di KXC-ConnectionManager può essere modificata da altri utenti di questo computer: potrebbero sostituire l'app e leggere le tue password. Spostala in una cartella solo tua, per esempio %LOCALAPPDATA%\Programs.</value></data>
 </root>

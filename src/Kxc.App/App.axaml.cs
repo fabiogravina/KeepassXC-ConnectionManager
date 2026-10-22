@@ -6,6 +6,7 @@ using Avalonia.Styling;
 using Kxc.App.Services;
 using Kxc.App.ViewModels;
 using Kxc.App.Views;
+using Kxc.Core.Platform;
 using Kxc.Core.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,6 +31,9 @@ public sealed partial class App : Application, IDisposable
         {
             var settings = _services.GetRequiredService<AppSettings>();
             SettingsViewModel.ApplyTheme(settings.Theme);
+
+            // S7: credenziali RDP dell'app rimaste da una sessione chiusa male.
+            _services.GetService<ISystemCredentialStore>()?.RemoveLeftovers();
 
             var shell = _services.GetRequiredService<ShellViewModel>();
             var window = new MainWindow { DataContext = shell };

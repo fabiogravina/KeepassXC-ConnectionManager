@@ -9,10 +9,14 @@ namespace Kxc.Platform.Credentials;
 /// <summary>
 /// Gestore credenziali di Windows tramite CredWrite: nessun processo e nessun argomento con la
 /// password (al contrario di cmdkey). Persistenza solo per la sessione di accesso (fase 0, RDP).
+/// Le credenziali dell'app portano un commento, così non si confondono con quelle dell'utente (S7).
 /// </summary>
 [SupportedOSPlatform("windows")]
 public sealed partial class WindowsCredentialStore : ISystemCredentialStore
 {
+    /// <summary>Commento che identifica le credenziali scritte dall'app.</summary>
+    public const string Marker = "KXC-ConnectionManager";
+
     private const int CredTypeDomainPassword = 2;
     private const int CredPersistSession = 1;
 
@@ -26,6 +30,7 @@ public sealed partial class WindowsCredentialStore : ISystemCredentialStore
         var blob = GC.AllocateArray<char>(length, pinned: true);
         var targetPtr = Marshal.StringToHGlobalUni(target);
         var userPtr = Marshal.StringToHGlobalUni(userName);
+        var commentPtr = Marshal.StringToHGlobalUni(Marker);
         try
         {
             Encoding.UTF8.GetChars(utf8Password, blob);
@@ -35,6 +40,7 @@ public sealed partial class WindowsCredentialStore : ISystemCredentialStore
                 {
                     Type = CredTypeDomainPassword,
                     TargetName = targetPtr,
+                    Comment = commentPtr,
                     CredentialBlobSize = length * sizeof(char),
                     CredentialBlob = (nint)password,
                     Persist = CredPersistSession,
@@ -52,10 +58,59 @@ public sealed partial class WindowsCredentialStore : ISystemCredentialStore
             Array.Clear(blob);
             Marshal.FreeHGlobal(targetPtr);
             Marshal.FreeHGlobal(userPtr);
+            Marshal.FreeHGlobal(commentPtr);
+        }
+    }
+
+    public unsafe CredentialOwner Find(string target)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(target);
+        if (!CredReadW(target, CredTypeDomainPassword, 0, out var pointer))
+        {
+            return CredentialOwner.None;
+        }
+
+        try
+        {
+            return IsOurs(*(NativeCredential*)pointer) ? CredentialOwner.ThisApp : CredentialOwner.Other;
+        }
+        finally
+        {
+            CredFree(pointer);
         }
     }
 
     public bool Delete(string target) => CredDeleteW(target, CredTypeDomainPassword, 0);
+
+    public unsafe int RemoveLeftovers()
+    {
+        if (!CredEnumerateW("TERMSRV/*", 0, out var count, out var array))
+        {
+            return 0;
+        }
+
+        var targets = new List<string>();
+        try
+        {
+            for (var i = 0; i < count; i++)
+            {
+                var credential = *(NativeCredential*)((nint*)array)[i];
+                if (credential.Type == CredTypeDomainPassword && IsOurs(credential))
+                {
+                    targets.Add(Marshal.PtrToStringUni(credential.TargetName)!);
+                }
+            }
+        }
+        finally
+        {
+            CredFree(array);
+        }
+
+        return targets.Count(Delete);
+    }
+
+    private static bool IsOurs(NativeCredential credential) =>
+        credential.Comment != 0 && string.Equals(Marshal.PtrToStringUni(credential.Comment), Marker, StringComparison.Ordinal);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct NativeCredential
@@ -80,5 +135,16 @@ public sealed partial class WindowsCredentialStore : ISystemCredentialStore
 
     [LibraryImport("advapi32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
     [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool CredReadW(string target, int type, int flags, out nint credential);
+
+    [LibraryImport("advapi32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool CredEnumerateW(string filter, int flags, out int count, out nint credentials);
+
+    [LibraryImport("advapi32.dll", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+    [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool CredDeleteW(string target, int type, int flags);
+
+    [LibraryImport("advapi32.dll")]
+    private static partial void CredFree(nint buffer);
 }

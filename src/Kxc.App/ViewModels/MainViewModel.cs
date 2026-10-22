@@ -52,12 +52,23 @@ public sealed partial class MainViewModel : ViewModelBase
     private string? _databaseStatus;
 
     private readonly Action _openSettings;
+    private readonly CancellationToken _session;
 
-    public MainViewModel(VaultSnapshot snapshot, AppSettings settings, ISettingsStore store, TimeProvider time, IConnectionLauncher connections, Action lockAction, Action? openSettings = null)
+    /// <param name="session">Annullato dal blocco: ferma le connessioni ancora in avvio (S10).</param>
+    public MainViewModel(
+        VaultSnapshot snapshot,
+        AppSettings settings,
+        ISettingsStore store,
+        TimeProvider time,
+        IConnectionLauncher connections,
+        Action lockAction,
+        Action? openSettings = null,
+        CancellationToken session = default)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         _connections = connections;
         _openSettings = openSettings ?? (() => { });
+        _session = session;
         _settings = settings;
         _store = store;
         _time = time;
@@ -221,7 +232,7 @@ public sealed partial class MainViewModel : ViewModelBase
         ConnectionStatus = Messages.Format(Strings.Status_Connecting, name, item.DisplayTitle);
         try
         {
-            await _connections.LaunchAsync(item.Entry, protocol, CancellationToken.None);
+            await _connections.LaunchAsync(item.Entry, protocol, _session);
             ConnectionStatus = Messages.Format(Strings.Status_Started, name, item.DisplayTitle);
             _settings.AddRecent(item.Uuid, _time.GetUtcNow());
             _store.Save(_settings);
@@ -230,6 +241,10 @@ public sealed partial class MainViewModel : ViewModelBase
         catch (ConnectionException ex)
         {
             ConnectionStatus = Messages.Format(Strings.Status_CannotConnect, item.DisplayTitle, Messages.For(ex, name));
+        }
+        catch (OperationCanceledException) when (_session.IsCancellationRequested)
+        {
+            // L'app si è bloccata durante l'avvio: la connessione non parte.
         }
     }
 

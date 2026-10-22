@@ -70,6 +70,13 @@ public sealed class WinScpConnector : IConnector
                 throw new ConnectionException(ConnectionError.Vault, "Lettura della password non riuscita.", ex);
             }
 
+            // S10: se l'app si è bloccata durante la lettura, la password non va oltre.
+            if (cancellationToken.IsCancellationRequested)
+            {
+                password.Dispose();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
             pipe = new OneShotSecretPipe(password, PipeLifetime);
             lock (_gate)
             {
@@ -102,9 +109,10 @@ public sealed class WinScpConnector : IConnector
             _pipes.Clear();
         }
 
+        // Mai attendere qui (S4): al blocco questo gira sul thread dell'interfaccia.
         foreach (var pipe in pipes)
         {
-            pipe.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            pipe.Cancel();
         }
     }
 

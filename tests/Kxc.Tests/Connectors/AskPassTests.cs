@@ -54,7 +54,7 @@ public class AskPassTests
     [Fact]
     public async Task Password_is_delivered_once_then_refused()
     {
-        await using var server = new AskPassServer(SecretBuffer.FromChars("gw-segreto è"), "host", new RecordingConfirmation(true), TimeSpan.FromSeconds(30));
+        await using var server = new AskPassServer(SecretBuffer.FromChars("gw-segreto è"), "pi", "host", new RecordingConfirmation(true), TimeSpan.FromSeconds(30));
 
         var first = await RunHelperAsync(server.ChannelName, "pi@host's password: ");
         var second = await RunHelperAsync(server.ChannelName, "pi@host's password: ");
@@ -65,10 +65,28 @@ public class AskPassTests
         Assert.True(server.PasswordDelivered);
     }
 
+    [Theory]
+    [InlineData("pi@host's password: ", true)]
+    [InlineData("(pi@host) Password: ", true)]
+    [InlineData("PI@HOST's password: ", true)]
+    [InlineData("pi@jump.example's password: ", false)]
+    [InlineData("(pi@jump.example) Password: ", false)]
+    [InlineData("root@host's password: ", false)]
+    [InlineData("Password: ", false)]
+    public async Task S3_password_goes_only_to_the_user_and_host_of_the_entry(string prompt, bool delivered)
+    {
+        await using var server = new AskPassServer(SecretBuffer.FromChars("segreto"), "pi", "host", new RecordingConfirmation(true), TimeSpan.FromSeconds(30));
+
+        var result = await RunHelperAsync(server.ChannelName, prompt);
+
+        Assert.Equal(delivered ? (0, "segreto\n") : (1, string.Empty), result);
+        Assert.Equal(delivered, server.PasswordDelivered);
+    }
+
     [Fact]
     public async Task Passphrases_and_unknown_questions_never_get_the_password()
     {
-        await using var server = new AskPassServer(SecretBuffer.FromChars("segreto"), "host", new RecordingConfirmation(true), TimeSpan.FromSeconds(30));
+        await using var server = new AskPassServer(SecretBuffer.FromChars("segreto"), "pi", "host", new RecordingConfirmation(true), TimeSpan.FromSeconds(30));
 
         var passphrase = await RunHelperAsync(server.ChannelName, "Enter passphrase for key 'id_ed25519': ");
         var retry = await RunHelperAsync(server.ChannelName, "Please type 'yes', 'no' or the fingerprint: ");
@@ -84,7 +102,7 @@ public class AskPassTests
     public async Task Host_key_question_goes_to_the_user(bool trusted, string expected)
     {
         var confirmation = new RecordingConfirmation(trusted);
-        await using var server = new AskPassServer(SecretBuffer.FromChars("segreto"), "host", confirmation, TimeSpan.FromSeconds(30));
+        await using var server = new AskPassServer(SecretBuffer.FromChars("segreto"), "pi", "host", confirmation, TimeSpan.FromSeconds(30));
 
         var result = await RunHelperAsync(server.ChannelName, HostKeyPrompt);
 
@@ -96,7 +114,7 @@ public class AskPassTests
     [Fact]
     public async Task Helper_fails_without_channel_or_after_the_channel_is_closed()
     {
-        var server = new AskPassServer(SecretBuffer.FromChars("segreto"), "host", new RecordingConfirmation(true), TimeSpan.FromSeconds(30));
+        var server = new AskPassServer(SecretBuffer.FromChars("segreto"), "pi", "host", new RecordingConfirmation(true), TimeSpan.FromSeconds(30));
         var channel = server.ChannelName;
         await server.DisposeAsync();
 

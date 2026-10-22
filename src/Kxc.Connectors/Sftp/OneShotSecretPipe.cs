@@ -33,6 +33,21 @@ internal sealed class OneShotSecretPipe : IAsyncDisposable
 
     public Task Completion => _loop;
 
+    /// <summary>Chiusura immediata senza attendere (S4); il segreto si azzera subito.</summary>
+    public void Cancel()
+    {
+        try
+        {
+            _stop.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Già chiuso.
+        }
+
+        _secret.Dispose();
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _stop.CancelAsync().ConfigureAwait(false);
@@ -55,7 +70,7 @@ internal sealed class OneShotSecretPipe : IAsyncDisposable
                 Delivered = true;
             }
         }
-        catch (Exception ex) when (ex is OperationCanceledException or IOException)
+        catch (Exception ex) when (ex is OperationCanceledException or IOException or ObjectDisposedException)
         {
             // Scaduto, chiuso o client uscito prima di leggere.
         }

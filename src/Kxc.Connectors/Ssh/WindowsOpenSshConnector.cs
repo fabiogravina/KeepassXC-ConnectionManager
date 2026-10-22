@@ -96,9 +96,16 @@ public sealed class WindowsOpenSshConnector : IConnector
             {
                 throw new ConnectionException(ConnectionError.Vault, "Lettura della password non riuscita.", ex);
             }
+
+            // S10: se l'app si è bloccata durante la lettura, la password non va oltre.
+            if (cancellationToken.IsCancellationRequested)
+            {
+                password.Dispose();
+                cancellationToken.ThrowIfCancellationRequested();
+            }
         }
 
-        var server = new AskPassServer(password, host, _hostKeys, _channelLifetime);
+        var server = new AskPassServer(password, entry.UserName, host, _hostKeys, _channelLifetime);
         Track(server);
 
         var environment = new Dictionary<string, string>(StringComparer.Ordinal)
@@ -138,9 +145,10 @@ public sealed class WindowsOpenSshConnector : IConnector
             _servers.Clear();
         }
 
+        // Mai attendere qui (S4): al blocco questo gira sul thread dell'interfaccia.
         foreach (var server in servers)
         {
-            server.DisposeAsync().AsTask().GetAwaiter().GetResult();
+            server.Cancel();
         }
     }
 
@@ -150,7 +158,8 @@ public sealed class WindowsOpenSshConnector : IConnector
     /// </summary>
     internal static IReadOnlyList<string> ClientArguments(ConnectionProtocols protocol, ConnectionEntry entry, string host)
     {
-        var arguments = new List<string> { "-o", "NumberOfPasswordPrompts=1" };
+        // ForwardAgent=no: la voce non concede l'agente SSH al server remoto (S3).
+        var arguments = new List<string> { "-o", "NumberOfPasswordPrompts=1", "-o", "ForwardAgent=no" };
         if (entry.UserName.Length > 0)
         {
             arguments.Add("-o");

@@ -70,7 +70,10 @@ public sealed class WindowsRdpConnector : IConnector
 
         var baseline = _probe.EstablishedEndpoints(port);
 
-        if (userName.Length > 0)
+        // S7: una credenziale salvata dall'utente per questo host (mstsc «Memorizza credenziali»)
+        // non va sovrascritta né poi cancellata: mstsc userà quella.
+        var writeCredential = userName.Length > 0 && !IsUserCredential(target);
+        if (writeCredential)
         {
             await WriteCredentialAsync(entry, target, userName, cancellationToken).ConfigureAwait(false);
         }
@@ -78,17 +81,40 @@ public sealed class WindowsRdpConnector : IConnector
         ILaunchedProcess process;
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             process = _launcher.Start(_mstscPath, Arguments(host, port));
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (OperationCanceledException)
+        {
+            RemoveCredential(target);
+            throw;
+        }
+        catch (Exception ex)
         {
             RemoveCredential(target);
             throw new ConnectionException(ConnectionError.ClientNotFound, "mstsc non si avvia.", ex);
         }
 
-        PendingCleanup = userName.Length > 0
+        PendingCleanup = writeCredential
             ? RemoveCredentialWhenConnectedAsync(target, host, port, baseline, process)
             : Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Vera se esiste una credenziale non scritta dall'app. Un residuo dell'app (crash) o una
+    /// credenziale di un'altra connessione in corso si può invece sostituire.
+    /// </summary>
+    private bool IsUserCredential(string target)
+    {
+        lock (_gate)
+        {
+            if (_pendingTargets.Contains(target))
+            {
+                return false;
+            }
+        }
+
+        return _credentials.Find(target) == CredentialOwner.Other;
     }
 
     public void CleanUp()
@@ -131,6 +157,9 @@ public sealed class WindowsRdpConnector : IConnector
         try
         {
             using var password = await _vault.ReadPasswordAsync(entry, cancellationToken).ConfigureAwait(false);
+
+            // S10: se l'app si è bloccata durante la lettura, nessuna credenziale viene scritta.
+            cancellationToken.ThrowIfCancellationRequested();
             lock (_gate)
             {
                 _pendingTargets.Add(target);

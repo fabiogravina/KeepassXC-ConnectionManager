@@ -43,6 +43,7 @@ internal static class AppServices
         services.AddSingleton(_ => SystemSessionEvents.Create());
         services.AddSingleton<IDatabaseWatcher, DatabaseFileWatcher>();
         services.AddSingleton<ExecutableSafetyCheck>(ExecutableSafety.IsSafe);
+        services.AddSingleton(sp => InstallationStatus.Check(sp.GetRequiredService<ExecutableSafetyCheck>(), InstallationStatus.AppExecutables()));
 
         services.AddSingleton<IProcessLauncher, ProcessLauncher>();
         services.AddSingleton<ITcpConnectionProbe, TcpConnectionProbe>();

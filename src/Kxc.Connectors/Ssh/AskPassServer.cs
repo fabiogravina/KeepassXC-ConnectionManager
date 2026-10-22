@@ -16,15 +16,18 @@ internal sealed class AskPassServer : IAsyncDisposable
     public static readonly TimeSpan DefaultLifetime = TimeSpan.FromMinutes(2);
 
     private readonly SecretBuffer? _password;
+    private readonly string _userName;
     private readonly string _host;
     private readonly IHostKeyConfirmation _hostKeys;
     private readonly CancellationTokenSource _stop;
     private readonly Task _loop;
 
     /// <param name="password">Password della voce, di cui il server diventa proprietario; null con l'agente SSH.</param>
-    public AskPassServer(SecretBuffer? password, string host, IHostKeyConfirmation hostKeys, TimeSpan lifetime)
+    /// <param name="userName">Utente della voce: la password va solo a una domanda per <c>utente@host</c> (S3).</param>
+    public AskPassServer(SecretBuffer? password, string userName, string host, IHostKeyConfirmation hostKeys, TimeSpan lifetime)
     {
         _password = password;
+        _userName = userName;
         _host = host;
         _hostKeys = hostKeys;
         ChannelName = "kxc-askpass-" + Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
@@ -38,6 +41,25 @@ internal sealed class AskPassServer : IAsyncDisposable
 
     /// <summary>Termina quando il canale si chiude (password consegnata, scadenza o Dispose).</summary>
     public Task Completion => _loop;
+
+    /// <summary>
+    /// Chiusura immediata, senza attendere (S4): chi chiama può essere il thread dell'interfaccia,
+    /// lo stesso che deve chiudere la finestra della host key. La password si azzera subito; il
+    /// canale termina in background.
+    /// </summary>
+    public void Cancel()
+    {
+        try
+        {
+            _stop.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Già chiuso.
+        }
+
+        _password?.Dispose();
+    }
 
     public async ValueTask DisposeAsync()
     {
@@ -74,7 +96,7 @@ internal sealed class AskPassServer : IAsyncDisposable
                 }
             }
         }
-        catch (OperationCanceledException)
+        catch (Exception ex) when (ex is OperationCanceledException or ObjectDisposedException)
         {
             // Durata scaduta o chiusura: l'helper non trova più il canale e ssh si ferma.
         }
@@ -100,13 +122,14 @@ internal sealed class AskPassServer : IAsyncDisposable
 
         switch (AskPassPrompt.Classify(prompt))
         {
-            case AskPassPromptKind.Password when _password is not null && !PasswordDelivered:
+            case AskPassPromptKind.Password when _password is not null && !PasswordDelivered && AskPassPrompt.IsPasswordFor(prompt, _userName, _host):
                 await RespondAsync(pipe, AskPassProtocol.Answer, _password.Memory, cancellationToken).ConfigureAwait(false);
                 PasswordDelivered = true;
                 break;
 
             case AskPassPromptKind.HostKey:
                 var trusted = await _hostKeys.ConfirmAsync(AskPassPrompt.ParseHostKey(prompt, _host), cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
                 await RespondAsync(pipe, AskPassProtocol.Answer, Encoding.ASCII.GetBytes(trusted ? "yes" : "no"), cancellationToken).ConfigureAwait(false);
                 break;
 

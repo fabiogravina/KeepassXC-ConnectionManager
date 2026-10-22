@@ -28,20 +28,20 @@ Seguono quattro problemi di gravità media e una serie di rafforzamenti.
 | --- | --- | --- | --- |
 | S1 | **Alta** | **Corretto** (22/10) | Iniezione di opzioni in ssh/sftp tramite `wt.exe` dal nome utente della voce |
 | S2 | **Alta** | **Corretto** (22/10) | Con una voce scaduta omonima viene letta e inviata la password della voce sbagliata |
-| S3 | Media | Da analisi | La password SSH va alla prima domanda «password», anche se la fa un jump host |
-| S4 | Media | Da analisi | Blocco e chiusura dell'app si piantano se è aperta la finestra della host key |
-| S5 | Media | Da analisi | Pacchetto portabile in una cartella scrivibile da altri utenti: sostituzione di DLL o di `kxc-askpass` |
+| S3 | Media | **Corretto** (22/10) | La password SSH va alla prima domanda «password», anche se la fa un jump host |
+| S4 | Media | **Corretto** (22/10) | Blocco e chiusura dell'app si piantano se è aperta la finestra della host key |
+| S5 | Media | **Corretto** (22/10) | Pacchetto portabile in una cartella scrivibile da altri utenti: sostituzione di DLL o di `kxc-askpass` |
 | S6 | Media | Da analisi | A ogni sblocco tutte le password del database transitano in chiaro nei buffer del processo |
-| S7 | Media-bassa | Da analisi | RDP: una credenziale già salvata dall'utente per lo stesso host viene sovrascritta e cancellata |
+| S7 | Media-bassa | **Corretto** (22/10) | RDP: una credenziale già salvata dall'utente per lo stesso host viene sovrascritta e cancellata |
 | S8 | Bassa | Da analisi | Controllo degli eseguibili incompleto e non applicato a WinSCP, `wt.exe`, `kxc-askpass` |
 | S9 | Bassa | **Corretto** (22/10) | Percorsi di voce che iniziano con `-` interpretati come opzioni da keepassxc-cli |
-| S10 | Bassa | Da analisi | Una connessione avviata appena prima del blocco prosegue dopo il blocco |
+| S10 | Bassa | **Corretto** (22/10) | Una connessione avviata appena prima del blocco prosegue dopo il blocco |
 | S11 | Bassa | Da verificare | Campo password: copie immutabili, cronologia di annullamento, copia con «Mostra» |
 | S12 | Bassa | Da analisi | Log di Avalonia su Trace anche in Release; dump in caso di crash |
 | S13 | Bassa | Da analisi | Database o key file su percorso UNC: autenticazione NTLM verso un server remoto |
 | S14 | Bassa | Da analisi | XML con gruppi annidati molto in profondità: stack overflow (crash) |
 | S15 | Bassa | Noto | Linux: nessun blocco con lo schermo e alla sospensione |
-| S16 | Bassa | Da analisi | Catena di fornitura: Actions non fissate, KeePassXC in CI senza versione, pacchetti non firmati |
+| S16 | **Media** | Confermato (22/10) | Catena di fornitura: Actions non fissate, KeePassXC in CI senza versione, pacchetti non firmati (Smart App Control blocca a volte `kxc-askpass` non firmato) |
 | S17 | Info | Da verificare | Percorso di `SSH_ASKPASS` con spazi e modo in cui OpenSSH per Windows lo avvia |
 
 ---
@@ -222,6 +222,16 @@ Se l'app sta in una cartella con spazi (per esempio `C:\Program Files\...`), va 
 - **S2.** La password si legge con `show -s -a Uuid -a Password`: se l'UUID restituito non è quello della voce scelta, la lettura viene rifiutata (`VaultError.EntryMismatch`) e la password azzerata. Le ambiguità di percorso si contano su tutte le voci, scadute comprese.
 - **S9.** `--` prima degli argomenti posizionali in `export` e `show`.
 - **Test di regressione.** `tests/Fixtures/fixture-casi.kdbx` (dati inventati) riproduce le prove: voce scaduta omonima e titolo `--all`; `SecurityRegressionTests` le esegue con keepassxc-cli vero. Nuovi test unitari per il nome utente SSH, l'argomento con virgolette verso `wt.exe`, la verifica dell'UUID, la password vuota e su più righe.
+
+**Fase 2 completata il 22 ottobre 2026** (222 test: 220 verdi, 2 saltati per la fixture KDBX 4; prova SSH e SFTP reale sul Raspberry riuscita).
+
+- **S3.** Il canale consegna la password solo a una domanda che nomina `utente@host` della voce (`pi@host's password:` o `(pi@host) Password:`); la domanda di un jump host viene rifiutata. ssh parte con `-o ForwardAgent=no`.
+- **S4.** `CleanUp` non attende più: annulla i canali e azzera subito le password (`AskPassServer.Cancel`, `OneShotSecretPipe.Cancel`); la finestra della host key si chiude con risposta «no». Test con una conferma che non risponde mai e un vero `kxc-askpass` in attesa.
+- **S5.** All'avvio si controllano eseguibile, cartella dell'app e `kxc-askpass` con lo stesso controllo usato per keepassxc-cli; se sono modificabili da altri utenti, la schermata di sblocco mostra un avviso prima della password (`InstallationStatus`). Nota: con la cartella del progetto sotto `D:\` (permessi ereditati da *Authenticated Users*) l'avviso compare anche nelle build di sviluppo, correttamente.
+- **S7.** Le credenziali dell'app portano il commento «KXC-ConnectionManager». Una credenziale dell'utente per lo stesso host non viene né sovrascritta né cancellata (mstsc usa quella); i residui dell'app vengono sostituiti ed eliminati all'avvio (`CredEnumerate` su `TERMSRV/*`). Test anche sul Gestore credenziali vero, con destinazioni `.invalid`.
+- **S10.** Allo sblocco nasce un token di sessione annullato dal blocco; i connettori lo controllano subito dopo la lettura della password e, se l'app si è bloccata, la azzerano e non avviano il client né scrivono credenziali.
+
+**Nuovo elemento emerso durante i test (S16, ora gravità media).** Sul PC di sviluppo è attivo **Smart App Control** di Windows 11. Almeno due volte ha bloccato la prima esecuzione di un `kxc-askpass.dll` appena compilato («Un criterio di controllo dell'applicazione ha bloccato il file»); pochi minuti dopo lo stesso file veniva eseguito. Su un PC con Smart App Control attivo un `kxc-askpass` non firmato può quindi essere bloccato: in quel caso ssh non riceve la password e la connessione fallisce (senza fughe di dati). La firma Authenticode di app e helper diventa necessaria per la distribuzione su Windows 11.
 
 ## Piano di correzione
 

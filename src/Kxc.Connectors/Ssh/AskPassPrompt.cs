@@ -39,6 +39,24 @@ internal static partial class AskPassPrompt
         return AskPassPromptKind.Other;
     }
 
+    /// <summary>
+    /// S3: la domanda deve nominare l'utente e l'host della voce, come fa OpenSSH
+    /// ("pi@host's password:" e, per keyboard-interactive, "(pi@host) Password:"). Una domanda
+    /// di un jump host (ProxyJump nella configurazione ssh) nomina un altro host e viene rifiutata.
+    /// </summary>
+    public static bool IsPasswordFor(string prompt, string userName, string host)
+    {
+        ArgumentNullException.ThrowIfNull(prompt);
+        if (userName.Length == 0 || Classify(prompt) != AskPassPromptKind.Password)
+        {
+            return false;
+        }
+
+        var target = userName + "@" + host;
+        return prompt.Contains(target + "'s password", StringComparison.OrdinalIgnoreCase)
+            || prompt.Contains("(" + target + ")", StringComparison.OrdinalIgnoreCase);
+    }
+
     public static HostKeyQuestion ParseHostKey(string prompt, string fallbackHost)
     {
         var host = HostRegex().Match(prompt);

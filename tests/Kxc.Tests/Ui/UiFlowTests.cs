@@ -120,7 +120,7 @@ public sealed class UiFlowTests : IDisposable
         MainWindow Window, ShellViewModel Shell, AppSettings Settings, FakeTimeProvider Time, FakeSessionEvents Session,
         Cli Cli, FakeConnections Connections, FakeWatcher Watcher, FakeFiles Files);
 
-    private Harness Create(AppSettings settings, int exportExitCode = 0)
+    private Harness Create(AppSettings settings, int exportExitCode = 0, InstallationStatus? installation = null)
     {
         var cli = new Cli();
         if (exportExitCode != 0)
@@ -139,7 +139,7 @@ public sealed class UiFlowTests : IDisposable
         var files = new FakeFiles(Fixture.DatabasePath);
         var shell = new ShellViewModel(
             new KeePassXcVaultService(cli.Runner, new FixedLocator()), store, settings, files, session, time, connections,
-            watcher, new FixedLocator(), path => !path.Contains("insicuro", StringComparison.Ordinal));
+            watcher, new FixedLocator(), path => !path.Contains("insicuro", StringComparison.Ordinal), installation ?? InstallationStatus.Safe);
         var window = new MainWindow { DataContext = shell, Width = 1120, Height = 720 };
         window.Show();
         shell.Start();
@@ -179,6 +179,25 @@ public sealed class UiFlowTests : IDisposable
         Assert.True(Find<TextBox>(h.Window, "SearchBox").IsFocused);
         Assert.Empty(unlock.Password);
         Snapshot(h.Window, "3-principale");
+    }
+
+    [AvaloniaFact]
+    public void S5_unsafe_installation_is_shown_before_typing_the_password()
+    {
+        var h = Create(UnlockableSettings(), installation: new InstallationStatus(false, [@"C:\Strumenti\KXC\KXC-ConnectionManager.exe"]));
+        var unlock = Assert.IsType<UnlockViewModel>(h.Shell.CurrentPage);
+
+        Assert.Equal(Kxc.App.Resources.Strings.Warning_UnsafeInstallation, unlock.SecurityWarning);
+        Assert.True(Find<TextBlock>(h.Window, "SecurityWarningText").IsEffectivelyVisible);
+        Snapshot(h.Window, "13-installazione-non-sicura");
+    }
+
+    [AvaloniaFact]
+    public void Safe_installation_shows_no_warning()
+    {
+        var h = Create(UnlockableSettings());
+
+        Assert.Null(((UnlockViewModel)h.Shell.CurrentPage!).SecurityWarning);
     }
 
     [AvaloniaFact]

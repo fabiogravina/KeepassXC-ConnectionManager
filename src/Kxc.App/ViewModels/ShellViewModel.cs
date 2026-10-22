@@ -31,8 +31,10 @@ public sealed partial class ShellViewModel : ViewModelBase, IDisposable
     private readonly IDatabaseWatcher _watcher;
     private readonly IKeePassXcCliLocator _cliLocator;
     private readonly ExecutableSafetyCheck _isSafeExecutable;
+    private readonly InstallationStatus _installation;
     private readonly AutoLockTimer _autoLock;
     private MainViewModel? _main;
+    private CancellationTokenSource? _session;
     private int _reloadGeneration;
 
     [ObservableProperty]
@@ -48,7 +50,8 @@ public sealed partial class ShellViewModel : ViewModelBase, IDisposable
         IConnectionLauncher connections,
         IDatabaseWatcher watcher,
         IKeePassXcCliLocator cliLocator,
-        ExecutableSafetyCheck isSafeExecutable)
+        ExecutableSafetyCheck isSafeExecutable,
+        InstallationStatus installation)
     {
         _vault = vault;
         _store = store;
@@ -60,6 +63,7 @@ public sealed partial class ShellViewModel : ViewModelBase, IDisposable
         _watcher = watcher;
         _cliLocator = cliLocator;
         _isSafeExecutable = isSafeExecutable;
+        _installation = installation;
 
         _autoLock = new AutoLockTimer(time, settings.AutoLockTimeout);
         _autoLock.Tick += (_, remaining) => Dispatcher.UIThread.Post(() => UpdateLockCountdown(remaining));
@@ -101,6 +105,12 @@ public sealed partial class ShellViewModel : ViewModelBase, IDisposable
 
         _main = null;
         _reloadGeneration++;
+
+        // Prima di tutto si fermano le connessioni ancora in avvio (S10).
+        _session?.Cancel();
+        _session?.Dispose();
+        _session = null;
+
         _autoLock.Stop();
         _watcher.StopWatching();
         _vault.Lock();
@@ -191,6 +201,8 @@ public sealed partial class ShellViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
+        _session?.Cancel();
+        _session?.Dispose();
         _autoLock.Dispose();
         _watcher.Dispose();
         _sessionEvents.Dispose();
@@ -214,12 +226,17 @@ public sealed partial class ShellViewModel : ViewModelBase, IDisposable
 
     private void ShowUnlock(string? message = null)
     {
-        CurrentPage = new UnlockViewModel(_vault, _store, _settings, _files, OnUnlocked) { InfoMessage = message };
+        CurrentPage = new UnlockViewModel(_vault, _store, _settings, _files, OnUnlocked)
+        {
+            InfoMessage = message,
+            SecurityWarning = _installation.IsSafe ? null : Strings.Warning_UnsafeInstallation,
+        };
     }
 
     private void OnUnlocked(VaultSnapshot snapshot)
     {
-        _main = new MainViewModel(snapshot, _settings, _store, _time, _connections, () => Lock(), OpenSettings);
+        _session = new CancellationTokenSource();
+        _main = new MainViewModel(snapshot, _settings, _store, _time, _connections, () => Lock(), OpenSettings, _session.Token);
         CurrentPage = _main;
         _autoLock.Timeout = _settings.AutoLockTimeout;
         _autoLock.Start();

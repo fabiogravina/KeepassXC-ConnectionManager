@@ -40,8 +40,69 @@ public class SshAndSftpConnectorTests
         UsesSshAgent = agent,
     };
 
-    private static WindowsOpenSshConnector OpenSsh(ConnectionProtocols protocol, RecordingLauncher launcher) =>
-        new(protocol, new FakeVault(Secret), launcher, new NeverAsked(), "kxc-askpass.exe", clientPath: @"C:\ssh.exe", terminalPath: "wt.exe");
+    /// <summary>Conferma della host key che non risponde mai, nemmeno all'annullamento (finestra aperta).</summary>
+    private sealed class PendingForever : IHostKeyConfirmation
+    {
+        public TaskCompletionSource Asked { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public Task<bool> ConfirmAsync(HostKeyQuestion question, CancellationToken cancellationToken)
+        {
+            Asked.TrySetResult();
+            return new TaskCompletionSource<bool>().Task;
+        }
+    }
+
+    private static WindowsOpenSshConnector OpenSsh(ConnectionProtocols protocol, RecordingLauncher launcher, FakeVault? vault = null, IHostKeyConfirmation? hostKeys = null) =>
+        new(protocol, vault ?? new FakeVault(Secret), launcher, hostKeys ?? new NeverAsked(), "kxc-askpass.exe", clientPath: @"C:\ssh.exe", terminalPath: "wt.exe");
+
+    [Fact]
+    public async Task S4_clean_up_returns_at_once_even_with_a_host_key_question_pending()
+    {
+        var hostKeys = new PendingForever();
+        var vault = new FakeVault(Secret);
+        var connector = OpenSsh(ConnectionProtocols.Ssh, new RecordingLauncher(), vault, hostKeys);
+        await connector.LaunchAsync(Entry(), TestContext.Current.CancellationToken);
+
+        // Un vero kxc-askpass fa la domanda sulla host key e resta in attesa della risposta.
+        var helper = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(
+            Path.Combine(AppContext.BaseDirectory, OperatingSystem.IsWindows() ? "kxc-askpass.exe" : "kxc-askpass"))
+        {
+            ArgumentList = { "The authenticity of host 'h' can't be established. Are you sure (yes/no/[fingerprint])? " },
+            Environment = { [AskPassProtocol.ChannelVariable] = connector.LastServer!.ChannelName },
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+        })!;
+        try
+        {
+            await hostKeys.Asked.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+
+            // Prima della correzione CleanUp restava in attesa della risposta (deadlock sul thread dell'interfaccia).
+            await Task.Run(connector.CleanUp, TestContext.Current.CancellationToken).WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
+
+            Assert.Throws<ObjectDisposedException>(() => vault.Issued[0].Span.Length);
+        }
+        finally
+        {
+            helper.Kill();
+            helper.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task S10_lock_during_the_password_read_starts_nothing()
+    {
+        var vault = new FakeVault(Secret);
+        var launcher = new RecordingLauncher();
+        var connector = OpenSsh(ConnectionProtocols.Ssh, launcher, vault);
+        using var session = new CancellationTokenSource();
+        vault.DuringRead = session.Cancel;
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connector.LaunchAsync(Entry(), session.Token));
+
+        Assert.Empty(launcher.Started);
+        Assert.Null(connector.LastServer);
+        Assert.Throws<ObjectDisposedException>(() => vault.Issued[0].Span.Length);
+    }
 
     [Fact]
     public async Task Ssh_opens_in_windows_terminal_with_askpass_and_no_secret_anywhere()
@@ -54,7 +115,7 @@ public class SshAndSftpConnectorTests
         var (file, arguments, environment) = Assert.Single(launcher.Started);
         Assert.Equal("wt.exe", file);
         Assert.Equal(
-            ["-w", "new", "nt", "--title", "SSH · Interni · Casa", @"C:\ssh.exe", "-o", "NumberOfPasswordPrompts=1", "-o", "User=pi", "--", "192.168.178.210"],
+            ["-w", "new", "nt", "--title", "SSH · Interni · Casa", @"C:\ssh.exe", "-o", "NumberOfPasswordPrompts=1", "-o", "ForwardAgent=no", "-o", "User=pi", "--", "192.168.178.210"],
             arguments);
         Assert.Equal("kxc-askpass.exe", environment!["SSH_ASKPASS"]);
         Assert.Equal("force", environment["SSH_ASKPASS_REQUIRE"]);
@@ -66,9 +127,9 @@ public class SshAndSftpConnectorTests
     [Fact]
     public void Sftp_uses_capital_p_for_the_port_and_ssh_lowercase()
     {
-        Assert.Equal(["-o", "NumberOfPasswordPrompts=1", "-o", "User=pi", "-P", "2222", "--", "h"],
+        Assert.Equal(["-o", "NumberOfPasswordPrompts=1", "-o", "ForwardAgent=no", "-o", "User=pi", "-P", "2222", "--", "h"],
             WindowsOpenSshConnector.ClientArguments(ConnectionProtocols.Sftp, Entry(port: 2222), "h"));
-        Assert.Equal(["-o", "NumberOfPasswordPrompts=1", "-o", "User=pi", "-p", "2222", "--", "h"],
+        Assert.Equal(["-o", "NumberOfPasswordPrompts=1", "-o", "ForwardAgent=no", "-o", "User=pi", "-p", "2222", "--", "h"],
             WindowsOpenSshConnector.ClientArguments(ConnectionProtocols.Ssh, Entry(port: 2222), "h"));
     }
 

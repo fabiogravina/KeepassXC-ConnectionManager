@@ -62,6 +62,22 @@ public sealed class PlatformTests : IDisposable
     }
 
     [Fact]
+    public void S5_installation_check_lists_only_existing_unsafe_files()
+    {
+        Directory.CreateDirectory(_directory);
+        var app = Path.Combine(_directory, "app.exe");
+        var helper = Path.Combine(_directory, "helper.exe");
+        File.WriteAllText(app, string.Empty);
+        File.WriteAllText(helper, string.Empty);
+
+        var status = Kxc.App.Services.InstallationStatus.Check(path => path != helper, [app, helper, Path.Combine(_directory, "manca.exe"), null]);
+
+        Assert.False(status.IsSafe);
+        Assert.Equal([helper], status.UnsafePaths);
+        Assert.True(Kxc.App.Services.InstallationStatus.Check(_ => true, [app]).IsSafe);
+    }
+
+    [Fact]
     public void Missing_executable_is_not_safe()
     {
         Assert.False(ExecutableSafety.IsSafe(Path.Combine(_directory, "manca.exe")));

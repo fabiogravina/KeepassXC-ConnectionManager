@@ -41,6 +41,10 @@ public sealed partial class UnlockViewModel : ViewModelBase
     [ObservableProperty]
     private string? _infoMessage;
 
+    /// <summary>Avviso sull'installazione (S5), mostrato prima che si digiti la password.</summary>
+    [ObservableProperty]
+    private string? _securityWarning;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(UnlockButtonText))]
     [NotifyCanExecuteChangedFor(nameof(UnlockCommand))]

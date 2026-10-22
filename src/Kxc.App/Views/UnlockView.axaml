@@ -19,6 +19,14 @@
           <Button Classes="link" Content="{x:Static res:Strings.Unlock_ChangeDatabase}" Command="{Binding ChangeDatabaseCommand}" />
         </StackPanel>
 
+        <Border IsVisible="{Binding SecurityWarning, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="0,12,0,0"
+                BorderBrush="{DynamicResource KxcWarning}" BorderThickness="1" CornerRadius="8" Padding="12,10">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <PathIcon Data="{StaticResource IconWarning}" Width="16" Height="16" Foreground="{DynamicResource KxcWarning}" VerticalAlignment="Top" />
+            <TextBlock x:Name="SecurityWarningText" Text="{Binding SecurityWarning}" Classes="warning" TextWrapping="Wrap" MaxWidth="400"
+                       AutomationProperties.LiveSetting="Assertive" />
+          </StackPanel>
+        </Border>
         <TextBlock Text="{Binding InfoMessage}" IsVisible="{Binding InfoMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
                    Classes="muted" TextWrapping="Wrap" Margin="0,8,0,0" />
 

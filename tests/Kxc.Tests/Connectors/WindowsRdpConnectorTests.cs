@@ -16,14 +16,29 @@ public class WindowsRdpConnectorTests
 
     internal sealed class FakeVault(string password, VaultError? error = null) : IVaultService
     {
+        /// <summary>Eseguito durante la lettura: per simulare un blocco a metà (S10).</summary>
+        public Action? DuringRead { get; set; }
+
+        public List<SecretBuffer> Issued { get; } = [];
+
         public bool IsUnlocked => true;
 
         public Task<VaultSnapshot> UnlockAsync(UnlockCredentials credentials, CancellationToken cancellationToken) => throw new NotSupportedException();
 
         public Task<VaultSnapshot> ReloadAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
 
-        public Task<SecretBuffer> ReadPasswordAsync(ConnectionEntry entry, CancellationToken cancellationToken) =>
-            error is { } e ? throw new VaultException(e, "errore simulato") : Task.FromResult(SecretBuffer.FromChars(password));
+        public Task<SecretBuffer> ReadPasswordAsync(ConnectionEntry entry, CancellationToken cancellationToken)
+        {
+            if (error is { } e)
+            {
+                throw new VaultException(e, "errore simulato");
+            }
+
+            DuringRead?.Invoke();
+            var secret = SecretBuffer.FromChars(password);
+            Issued.Add(secret);
+            return Task.FromResult(secret);
+        }
 
         public void Lock()
         {
@@ -32,17 +47,36 @@ public class WindowsRdpConnectorTests
 
     internal sealed class FakeCredentials : ISystemCredentialStore
     {
+        /// <summary>Credenziali scritte dall'app.</summary>
         public Dictionary<string, (string User, string Password)> Stored { get; } = [];
+
+        /// <summary>Credenziali salvate dall'utente (per esempio da mstsc).</summary>
+        public HashSet<string> UserOwned { get; } = [];
 
         public List<string> Deleted { get; } = [];
 
-        public void WriteSessionCredential(string target, string userName, ReadOnlySpan<byte> utf8Password) =>
+        public void WriteSessionCredential(string target, string userName, ReadOnlySpan<byte> utf8Password)
+        {
+            UserOwned.Remove(target);
             Stored[target] = (userName, Encoding.UTF8.GetString(utf8Password));
+        }
+
+        public CredentialOwner Find(string target) =>
+            UserOwned.Contains(target) ? CredentialOwner.Other
+            : Stored.ContainsKey(target) ? CredentialOwner.ThisApp
+            : CredentialOwner.None;
 
         public bool Delete(string target)
         {
             Deleted.Add(target);
-            return Stored.Remove(target);
+            return Stored.Remove(target) | UserOwned.Remove(target);
+        }
+
+        public int RemoveLeftovers()
+        {
+            var count = Stored.Count;
+            Stored.Clear();
+            return count;
         }
     }
 
@@ -87,7 +121,7 @@ public class WindowsRdpConnectorTests
             Endpoints.Where(e => e.EndsWith(":" + remotePort, StringComparison.Ordinal)).ToHashSet();
     }
 
-    private sealed record Harness(WindowsRdpConnector Connector, FakeCredentials Credentials, FakeLauncher Launcher, FakeProbe Probe, FakeTimeProvider Time);
+    private sealed record Harness(WindowsRdpConnector Connector, FakeCredentials Credentials, FakeLauncher Launcher, FakeProbe Probe, FakeTimeProvider Time, FakeVault Vault);
 
     private static Harness Create(VaultError? vaultError = null)
     {
@@ -95,8 +129,50 @@ public class WindowsRdpConnectorTests
         var launcher = new FakeLauncher();
         var probe = new FakeProbe();
         var time = new FakeTimeProvider();
-        var connector = new WindowsRdpConnector(new FakeVault(Secret, vaultError), credentials, launcher, probe, time, mstscPath: "mstsc.exe");
-        return new Harness(connector, credentials, launcher, probe, time);
+        var vault = new FakeVault(Secret, vaultError);
+        var connector = new WindowsRdpConnector(vault, credentials, launcher, probe, time, mstscPath: "mstsc.exe");
+        return new Harness(connector, credentials, launcher, probe, time, vault);
+    }
+
+    [Fact]
+    public async Task S7_credential_saved_by_the_user_is_neither_overwritten_nor_deleted()
+    {
+        var h = Create();
+        h.Credentials.UserOwned.Add("TERMSRV/192.168.1.125");
+
+        await h.Connector.LaunchAsync(Entry(), TestContext.Current.CancellationToken);
+        h.Connector.CleanUp();
+
+        Assert.Contains("TERMSRV/192.168.1.125", h.Credentials.UserOwned);
+        Assert.Empty(h.Credentials.Stored);
+        Assert.Empty(h.Credentials.Deleted);
+        Assert.Empty(h.Vault.Issued);
+        Assert.Single(h.Launcher.Started);
+    }
+
+    [Fact]
+    public async Task S7_leftover_credential_of_the_app_is_replaced()
+    {
+        var h = Create();
+        h.Credentials.Stored["TERMSRV/192.168.1.125"] = ("vecchio", "residuo");
+
+        await h.Connector.LaunchAsync(Entry(), TestContext.Current.CancellationToken);
+
+        Assert.Equal((@"OLTRESOLUTIONS\fabio", Secret), h.Credentials.Stored["TERMSRV/192.168.1.125"]);
+    }
+
+    [Fact]
+    public async Task S10_lock_during_the_password_read_writes_no_credential_and_starts_nothing()
+    {
+        var h = Create();
+        using var session = new CancellationTokenSource();
+        h.Vault.DuringRead = session.Cancel;
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => h.Connector.LaunchAsync(Entry(), session.Token));
+
+        Assert.Empty(h.Credentials.Stored);
+        Assert.Empty(h.Launcher.Started);
+        Assert.Throws<ObjectDisposedException>(() => h.Vault.Issued[0].Span.Length);
     }
 
     /// <summary>Avanza l'orologio simulato a passi brevi, lasciando girare le continuazioni.</summary>

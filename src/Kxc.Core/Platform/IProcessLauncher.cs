@@ -25,10 +25,30 @@ public delegate bool ExecutableSafetyCheck(string path);
 /// <summary>Credenziali del sistema usate dai client (su Windows, il Gestore credenziali).</summary>
 public interface ISystemCredentialStore
 {
-    /// <summary>Credenziale valida solo per la sessione di accesso corrente, mai salvata su disco.</summary>
+    /// <summary>
+    /// Credenziale valida solo per la sessione di accesso corrente, mai salvata su disco, marcata
+    /// come scritta da KXC-ConnectionManager.
+    /// </summary>
     void WriteSessionCredential(string target, string userName, ReadOnlySpan<byte> utf8Password);
 
+    /// <summary>Chi ha scritto la credenziale esistente per la destinazione (S7).</summary>
+    CredentialOwner Find(string target);
+
     bool Delete(string target);
+
+    /// <summary>Elimina le credenziali dell'app rimaste da una sessione precedente (crash, chiusura forzata).</summary>
+    int RemoveLeftovers();
+}
+
+public enum CredentialOwner
+{
+    None,
+
+    /// <summary>Scritta da KXC-ConnectionManager.</summary>
+    ThisApp,
+
+    /// <summary>Salvata dall'utente o da un altro programma: non va né sovrascritta né cancellata.</summary>
+    Other,
 }
 
 /// <summary>

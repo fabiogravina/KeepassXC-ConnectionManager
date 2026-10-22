@@ -8,7 +8,6 @@
     <RootNamespace>Kxc.AskPass</RootNamespace>
     <AssemblyName>kxc-askpass</AssemblyName>
     <InvariantGlobalization>true</InvariantGlobalization>
-    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Kxc.Core\Connections\AskPassProtocol.cs" Link="AskPassProtocol.cs" />

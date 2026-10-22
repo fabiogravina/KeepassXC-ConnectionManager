@@ -18,6 +18,9 @@
     <Version>0.1.0</Version>
     <!-- Lock file: versioni dei pacchetti bloccate anche per le dipendenze transitive (SEC-09). -->
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!-- Piattaforme pubblicate, per tutti i progetti: i lock file restano uguali qualunque sia il
+         sistema per cui si pubblica (la CI ripristina i pacchetti in modalità bloccata). -->
+    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>
     <NuGetAuditLevel>low</NuGetAuditLevel>

@@ -7,28 +7,37 @@ on:
 permissions:
   contents: read
 
+# S16: Actions fissate all'hash del commit (il commento indica la versione), immagini dei runner
+# e versione di KeePassXC esplicite. Dependabot (.github/dependabot.yml) propone gli aggiornamenti.
 jobs:
   build-test:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-2025, ubuntu-24.04]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
 
       # keepassxc-cli per i test di integrazione e di sicurezza (senza, vengono saltati).
       - name: Installa KeePassXC (Ubuntu)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y keepassxc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y keepassxc=2.7.6+dfsg.1-1build3
+          keepassxc-cli --version
 
       - name: Installa KeePassXC (Windows)
         if: runner.os == 'Windows'
-        run: choco install keepassxc -y --no-progress
+        run: |
+          choco install keepassxc --version 2.7.12 -y --no-progress
+          & "$env:ProgramFiles\KeePassXC\keepassxc-cli.exe" --version
 
       - name: Restore
         run: dotnet restore Kxc.sln --locked-mode

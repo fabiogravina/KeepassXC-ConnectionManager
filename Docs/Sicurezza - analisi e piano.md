@@ -41,7 +41,7 @@ Seguono quattro problemi di gravità media e una serie di rafforzamenti.
 | S13 | Bassa | **Corretto** (22/10, avviso) | Database o key file su percorso UNC: autenticazione NTLM verso un server remoto |
 | S14 | Bassa | **Corretto** (22/10) | XML con gruppi annidati molto in profondità: stack overflow (crash) |
 | S15 | Bassa | Noto | Linux: nessun blocco con lo schermo e alla sospensione |
-| S16 | **Media** | Confermato (22/10) | Catena di fornitura: Actions non fissate, KeePassXC in CI senza versione, pacchetti non firmati (Smart App Control blocca a volte `kxc-askpass` non firmato) |
+| S16 | **Media** | **In parte corretto** (22/10): manca il certificato | Catena di fornitura: Actions non fissate, KeePassXC in CI senza versione, pacchetti non firmati (Smart App Control blocca a volte `kxc-askpass` non firmato) |
 | S17 | Info | Da verificare | Percorso di `SSH_ASKPASS` con spazi e modo in cui OpenSSH per Windows lo avvia |
 
 ---
@@ -241,6 +241,16 @@ Se l'app sta in una cartella con spazi (per esempio `C:\Program Files\...`), va 
 - **S12.** Log di Avalonia solo in Debug. Un errore imprevisto sul thread dell'interfaccia blocca l'app (credenziali azzerate) invece di chiuderla; un crash su un altro thread blocca il database e rimuove le credenziali temporanee prima di uscire; un errore imprevisto di un client viene mostrato nella barra di stato. *Non fatto:* esclusione del processo dai dump di Windows Error Reporting.
 - **S13.** Database o key file su un percorso UNC o su un'unità di rete: avviso nella schermata di sblocco. Non vengono rifiutati, perché un NAS è un uso legittimo.
 - **S14.** Oltre 256 livelli di gruppi annidati la lettura si ferma con «database non leggibile» invece di chiudere l'app per stack overflow.
+
+**S16 il 22 ottobre 2026: in parte corretto.**
+
+- **CI:** `actions/checkout` (v7.0.1) e `actions/setup-dotnet` (v6.0.0) fissate all'hash del commit, `persist-credentials: false`, immagini dei runner esplicite (`windows-2025`, `ubuntu-24.04`), KeePassXC a versione fissa (Chocolatey 2.7.12, Ubuntu 2.7.6). `.github/dependabot.yml` propone ogni settimana gli aggiornamenti di Actions e pacchetti NuGet, che passano dalla CI.
+- **Pubblicazione:** [build/publish.ps1](../build/publish.ps1) firma con Authenticode i binari dell'app (`KXC-ConnectionManager.exe/.dll`, `Kxc.*.dll`, `kxc-askpass.exe`) se riceve l'impronta di un certificato di firma del codice, con marca temporale; con `-RequireSignature` si rifiuta di produrre pacchetti non firmati o firmati con un certificato non riconosciuto; per Linux `-GpgKey` produce una firma `.asc`; `publish/SHA256SUMS` riporta l'hash di ogni archivio. Provato con un certificato autofirmato temporaneo (7 binari firmati; `-RequireSignature` lo rifiuta correttamente; certificato poi rimosso).
+- **Manca il certificato**, che è una scelta del titolare del progetto. Smart App Control accetta solo firme di autorità riconosciute; un certificato autofirmato non basta. Opzioni:
+  - **SignPath Foundation**: firma gratuita per progetti open source (la licenza AGPL va bene), con firma eseguita nella loro pipeline a partire dal repository pubblico;
+  - **Azure Artifact Signing** (ex Trusted Signing) di Microsoft: servizio a pagamento mensile, con verifica dell'identità (da verificare la disponibilità per un privato in Italia);
+  - **certificato OV di un'autorità** (Sectigo, DigiCert e altre): pagamento annuale, chiave privata su token o HSM.
+- `build/icons/icon.cs` scarica SkiaSharp fuori dai lock file: è solo uno strumento di sviluppo e non entra nei pacchetti, quindi resta così.
 
 ## Piano di correzione
 

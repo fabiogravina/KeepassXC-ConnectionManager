@@ -107,8 +107,16 @@ public sealed class UiFlowTests : IDisposable
 
         public ClientOption? ActiveClient(ConnectionProtocols protocol) => Clients(protocol) is [var first, ..] ? first : null;
 
+        /// <summary>Errore imprevisto del client al prossimo avvio (S12).</summary>
+        public Exception? FailWith { get; set; }
+
         public Task LaunchAsync(ConnectionEntry entry, ConnectionProtocols protocol, CancellationToken cancellationToken)
         {
+            if (FailWith is { } error)
+            {
+                throw error;
+            }
+
             Launched.Add((entry.Title, protocol));
             return Task.CompletedTask;
         }
@@ -327,6 +335,21 @@ public sealed class UiFlowTests : IDisposable
         var rdp = main.Items.Single(i => i.Entry.Title == "Server file");
         Assert.Equal(["RDP"], rdp.Protocols.Select(p => p.Label));
         Assert.DoesNotContain(main.Items.SelectMany(i => i.Protocols), p => p.Label == Kxc.App.Resources.Strings.Main_Connect);
+    }
+
+    [AvaloniaFact]
+    public void S12_unexpected_client_error_is_shown_and_the_app_stays_open()
+    {
+        var h = UnlockedHarness();
+        var main = (MainViewModel)h.Shell.CurrentPage!;
+        h.Connections.FailWith = new IOException("pipe chiusa");
+
+        h.Window.KeyTextInput("server file");
+        Pump();
+        h.Window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
+        PumpUntil(() => main.ConnectionStatus?.Contains(Kxc.App.Resources.Strings.Error_Unexpected, StringComparison.Ordinal) == true);
+
+        Assert.Same(main, h.Shell.CurrentPage);
     }
 
     [AvaloniaFact]

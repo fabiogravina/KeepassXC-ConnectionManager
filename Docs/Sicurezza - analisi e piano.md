@@ -31,15 +31,15 @@ Seguono quattro problemi di gravità media e una serie di rafforzamenti.
 | S3 | Media | **Corretto** (22/10) | La password SSH va alla prima domanda «password», anche se la fa un jump host |
 | S4 | Media | **Corretto** (22/10) | Blocco e chiusura dell'app si piantano se è aperta la finestra della host key |
 | S5 | Media | **Corretto** (22/10) | Pacchetto portabile in una cartella scrivibile da altri utenti: sostituzione di DLL o di `kxc-askpass` |
-| S6 | Media | Da analisi | A ogni sblocco tutte le password del database transitano in chiaro nei buffer del processo |
+| S6 | Media | **Corretto** (22/10) | A ogni sblocco tutte le password del database transitano in chiaro nei buffer del processo |
 | S7 | Media-bassa | **Corretto** (22/10) | RDP: una credenziale già salvata dall'utente per lo stesso host viene sovrascritta e cancellata |
-| S8 | Bassa | Da analisi | Controllo degli eseguibili incompleto e non applicato a WinSCP, `wt.exe`, `kxc-askpass` |
+| S8 | Bassa | **Corretto** (22/10, Linux in parte) | Controllo degli eseguibili incompleto e non applicato a WinSCP, `wt.exe`, `kxc-askpass` |
 | S9 | Bassa | **Corretto** (22/10) | Percorsi di voce che iniziano con `-` interpretati come opzioni da keepassxc-cli |
 | S10 | Bassa | **Corretto** (22/10) | Una connessione avviata appena prima del blocco prosegue dopo il blocco |
-| S11 | Bassa | Da verificare | Campo password: copie immutabili, cronologia di annullamento, copia con «Mostra» |
-| S12 | Bassa | Da analisi | Log di Avalonia su Trace anche in Release; dump in caso di crash |
-| S13 | Bassa | Da analisi | Database o key file su percorso UNC: autenticazione NTLM verso un server remoto |
-| S14 | Bassa | Da analisi | XML con gruppi annidati molto in profondità: stack overflow (crash) |
+| S11 | Bassa | **Confermato e corretto** (22/10) | Campo password: copie immutabili, cronologia di annullamento, copia con «Mostra» |
+| S12 | Bassa | **Corretto** (22/10, dump WER no) | Log di Avalonia su Trace anche in Release; dump in caso di crash |
+| S13 | Bassa | **Corretto** (22/10, avviso) | Database o key file su percorso UNC: autenticazione NTLM verso un server remoto |
+| S14 | Bassa | **Corretto** (22/10) | XML con gruppi annidati molto in profondità: stack overflow (crash) |
 | S15 | Bassa | Noto | Linux: nessun blocco con lo schermo e alla sospensione |
 | S16 | **Media** | Confermato (22/10) | Catena di fornitura: Actions non fissate, KeePassXC in CI senza versione, pacchetti non firmati (Smart App Control blocca a volte `kxc-askpass` non firmato) |
 | S17 | Info | Da verificare | Percorso di `SSH_ASKPASS` con spazi e modo in cui OpenSSH per Windows lo avvia |
@@ -232,6 +232,15 @@ Se l'app sta in una cartella con spazi (per esempio `C:\Program Files\...`), va 
 - **S10.** Allo sblocco nasce un token di sessione annullato dal blocco; i connettori lo controllano subito dopo la lettura della password e, se l'app si è bloccata, la azzerano e non avviano il client né scrivono credenziali.
 
 **Nuovo elemento emerso durante i test (S16, ora gravità media).** Sul PC di sviluppo è attivo **Smart App Control** di Windows 11. Almeno due volte ha bloccato la prima esecuzione di un `kxc-askpass.dll` appena compilato («Un criterio di controllo dell'applicazione ha bloccato il file»); pochi minuti dopo lo stesso file veniva eseguito. Su un PC con Smart App Control attivo un `kxc-askpass` non firmato può quindi essere bloccato: in quel caso ssh non riceve la password e la connessione fallisce (senza fughe di dati). La firma Authenticode di app e helper diventa necessaria per la distribuzione su Windows 11.
+
+**Fase 3 completata il 22 ottobre 2026** (241 test: 239 verdi, 2 saltati per la fixture KDBX 4; sblocco del database KDBX 4 reale e prova SSH/SFTP sul Raspberry riusciti).
+
+- **S6.** `ProtectedValueFilterStream` sta tra stdout di keepassxc-cli e `XmlReader`: sostituisce con spazi, nello stesso buffer in cui arrivano, il testo dei valori `ProtectInMemory="True"`, di ogni valore della chiave `Password` (anche se il database non la protegge in memoria) e di tutto `<Binaries>`. Il parser non vede mai segreti né allegati. Test anche leggendo un byte alla volta. *Resta:* i buffer della pipe del sistema operativo e la memoria del processo keepassxc-cli, fuori dal controllo dell'app.
+- **S8.** Il controllo degli eseguibili usa una lista di principali ammessi (utente corrente, SYSTEM, Administrators, TrustedInstaller) per ogni diritto di scrittura, verifica il proprietario e risale le cartelle superiori (chi può rinominarle o prenderne il controllo rende l'eseguibile non sicuro). Su Linux segue i collegamenti simbolici e risale le cartelle, ignorando quelle con sticky bit. Il controllo vale ora anche per mstsc, ssh/sftp, Windows Terminal e WinSCP: un client non sicuro risulta non disponibile. Verificato sui client reali: keepassxc-cli, mstsc, ssh, `wt.exe` e WinSCP sicuri; la build di sviluppo sotto `D:\` no. *Resta:* il proprietario su Linux (da fare su Kubuntu, serve codice nativo).
+- **S11.** Le prove hanno **confermato** i tre problemi nel `TextBox` di Avalonia 12: con «Mostra» la password si copiava negli appunti, l'automazione dell'interfaccia la esponeva in chiaro anche nascosta, la cronologia di annullamento ne teneva copie. Nuovo controllo `SecretTextBox` (aspetto invariato): niente annullamento, copia e taglio bloccati, valore vuoto per l'automazione. *Resta:* le stringhe immutabili create durante la digitazione (limite noto di SEC-02).
+- **S12.** Log di Avalonia solo in Debug. Un errore imprevisto sul thread dell'interfaccia blocca l'app (credenziali azzerate) invece di chiuderla; un crash su un altro thread blocca il database e rimuove le credenziali temporanee prima di uscire; un errore imprevisto di un client viene mostrato nella barra di stato. *Non fatto:* esclusione del processo dai dump di Windows Error Reporting.
+- **S13.** Database o key file su un percorso UNC o su un'unità di rete: avviso nella schermata di sblocco. Non vengono rifiutati, perché un NAS è un uso legittimo.
+- **S14.** Oltre 256 livelli di gruppi annidati la lettura si ferma con «database non leggibile» invece di chiudere l'app per stack overflow.
 
 ## Piano di correzione
 

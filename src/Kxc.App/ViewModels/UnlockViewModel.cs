@@ -21,7 +21,7 @@ public sealed partial class UnlockViewModel : ViewModelBase
     private readonly Action<VaultSnapshot> _onUnlocked;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(DatabaseFileName))]
+    [NotifyPropertyChangedFor(nameof(DatabaseFileName), nameof(NetworkWarning))]
     private string _databasePath;
 
     [ObservableProperty]
@@ -32,7 +32,7 @@ public sealed partial class UnlockViewModel : ViewModelBase
     private bool _isPasswordVisible;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(KeyFileName), nameof(HasKeyFile), nameof(KeyFileButtonText))]
+    [NotifyPropertyChangedFor(nameof(KeyFileName), nameof(HasKeyFile), nameof(KeyFileButtonText), nameof(NetworkWarning))]
     private string? _keyFilePath;
 
     [ObservableProperty]
@@ -65,6 +65,10 @@ public sealed partial class UnlockViewModel : ViewModelBase
     public event EventHandler? FocusPasswordRequested;
 
     public string DatabaseFileName => Path.GetFileName(DatabasePath);
+
+    /// <summary>S13: database o key file su un percorso di rete.</summary>
+    public string? NetworkWarning =>
+        NetworkPaths.IsNetworkPath(DatabasePath) || NetworkPaths.IsNetworkPath(KeyFilePath) ? Strings.Warning_NetworkPath : null;
 
     public string? KeyFileName => KeyFilePath is null ? null : Path.GetFileName(KeyFilePath);
 

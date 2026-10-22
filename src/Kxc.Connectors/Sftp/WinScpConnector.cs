@@ -41,15 +41,17 @@ public sealed class WinScpConnector : IConnector
     public bool IsSupported => File.Exists(WinScpPath);
 
     /// <summary>Percorsi d'installazione di WinSCP: per tutti gli utenti o solo per l'utente.</summary>
-    public static string? Find()
+    /// <param name="isSafeExecutable">S8: WinSCP riceve la password; si usa solo se nessun altro utente può sostituirlo.</param>
+    public static string? Find(Func<string, bool> isSafeExecutable)
     {
+        ArgumentNullException.ThrowIfNull(isSafeExecutable);
         string[] candidates =
         [
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "WinSCP", "WinSCP.exe"),
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WinSCP", "WinSCP.exe"),
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "WinSCP", "WinSCP.exe"),
         ];
-        return candidates.FirstOrDefault(File.Exists);
+        return candidates.Where(File.Exists).FirstOrDefault(isSafeExecutable);
     }
 
     public async Task LaunchAsync(ConnectionEntry entry, CancellationToken cancellationToken)

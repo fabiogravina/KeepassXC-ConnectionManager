@@ -3,11 +3,14 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Kxc.App.Services;
 using Kxc.App.ViewModels;
 using Kxc.App.Views;
+using Kxc.Core.Connections;
 using Kxc.Core.Platform;
 using Kxc.Core.Settings;
+using Kxc.Core.Vault;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kxc.App;
@@ -44,6 +47,7 @@ public sealed partial class App : Application, IDisposable
             _services.GetRequiredService<HostKeyConfirmationService>().Owner = window;
             desktop.MainWindow = window;
             desktop.ShutdownRequested += (_, _) => Dispose();
+            HandleUnexpectedErrors(shell);
             shell.Start();
         }
 
@@ -55,6 +59,32 @@ public sealed partial class App : Application, IDisposable
         // Azzera le credenziali in memoria anche alla chiusura.
         _services?.Dispose();
         _services = null;
+    }
+
+    /// <summary>
+    /// S12: un errore imprevisto sul thread dell'interfaccia blocca l'app (credenziali azzerate)
+    /// invece di chiuderla; un crash su un altro thread azzera comunque ciò che può prima di uscire.
+    /// </summary>
+    private void HandleUnexpectedErrors(ShellViewModel shell)
+    {
+        Dispatcher.UIThread.UnhandledException += (_, e) =>
+        {
+            e.Handled = true;
+            shell.Lock(Kxc.App.Resources.Strings.Error_UnexpectedLocked);
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (_, _) =>
+        {
+            try
+            {
+                _services?.GetService<IVaultService>()?.Lock();
+                _services?.GetService<IConnectionLauncher>()?.CleanUp();
+            }
+            catch (Exception ex) when (ex is ObjectDisposedException or InvalidOperationException)
+            {
+                // Il processo sta terminando: si fa quel che si può.
+            }
+        };
     }
 
     private static void ApplyLanguage(AppSettings settings)

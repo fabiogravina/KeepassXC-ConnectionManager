@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Kxc.App.ViewModels"
              xmlns:res="using:Kxc.App.Resources"
+             xmlns:controls="using:Kxc.App.Controls"
              x:Class="Kxc.App.Views.UnlockView"
              x:DataType="vm:UnlockViewModel">
   <DockPanel>
@@ -27,18 +28,20 @@
                        AutomationProperties.LiveSetting="Assertive" />
           </StackPanel>
         </Border>
+        <TextBlock x:Name="NetworkWarningText" Text="{Binding NetworkWarning}" Classes="warning" TextWrapping="Wrap" Margin="0,8,0,0"
+                   IsVisible="{Binding NetworkWarning, Converter={x:Static ObjectConverters.IsNotNull}}" />
         <TextBlock Text="{Binding InfoMessage}" IsVisible="{Binding InfoMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
                    Classes="muted" TextWrapping="Wrap" Margin="0,8,0,0" />
 
         <TextBlock Text="{x:Static res:Strings.Unlock_Password}" FontWeight="SemiBold" Margin="0,20,0,4" />
-        <TextBox x:Name="PasswordBox" Text="{Binding Password}" PasswordChar="•" RevealPassword="{Binding IsPasswordVisible}"
+        <controls:SecretTextBox x:Name="PasswordBox" Text="{Binding Password}" PasswordChar="•" RevealPassword="{Binding IsPasswordVisible}"
                  FontSize="16" Padding="12,10" CornerRadius="8"
                  AutomationProperties.Name="{x:Static res:Strings.Unlock_Password}">
-          <TextBox.InnerRightContent>
+          <controls:SecretTextBox.InnerRightContent>
             <Button Classes="link" Content="{Binding RevealButtonText}" Command="{Binding TogglePasswordVisibilityCommand}"
                     Margin="0,0,6,0" VerticalAlignment="Center" />
-          </TextBox.InnerRightContent>
-        </TextBox>
+          </controls:SecretTextBox.InnerRightContent>
+        </controls:SecretTextBox>
         <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
                    Classes="error" TextWrapping="Wrap" AutomationProperties.LiveSetting="Assertive" />
 

@@ -131,4 +131,7 @@
   <data name="Status_CredentialsChanged" xml:space="preserve"><value>The database password or key file changed: unlock it again.</value></data>
   <data name="Warning_UnsafeSshUser" xml:space="preserve"><value>The user name contains characters not allowed for SSH and SFTP (spaces, quotes, symbols): fix it in KeePassXC.</value></data>
   <data name="Warning_UnsafeInstallation" xml:space="preserve"><value>The KXC-ConnectionManager folder can be changed by other users of this computer: they could replace the app and read your passwords. Move it to a folder only you can change, for example %LOCALAPPDATA%\Programs.</value></data>
+  <data name="Error_Unexpected" xml:space="preserve"><value>Unexpected client error. Try again; if it happens again, restart the app.</value></data>
+  <data name="Error_UnexpectedLocked" xml:space="preserve"><value>An unexpected error occurred: for safety the app has been locked. Unlock it to continue.</value></data>
+  <data name="Warning_NetworkPath" xml:space="preserve"><value>The database or key file is on a network path: Windows accesses it with your credentials. Only use servers you trust.</value></data>
 </root>

@@ -246,6 +246,11 @@ public sealed partial class MainViewModel : ViewModelBase
         {
             // L'app si è bloccata durante l'avvio: la connessione non parte.
         }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or VaultException)
+        {
+            // S12: un errore imprevisto di un client non deve far cadere l'app.
+            ConnectionStatus = Messages.Format(Strings.Status_CannotConnect, item.DisplayTitle, Strings.Error_Unexpected);
+        }
     }
 
     private void RefreshList()

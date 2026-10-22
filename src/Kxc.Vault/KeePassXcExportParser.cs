@@ -13,6 +13,12 @@ namespace Kxc.Vault;
 /// </summary>
 internal static class KeePassXcExportParser
 {
+    /// <summary>
+    /// Oltre questa profondità di gruppi annidati la lettura si ferma (S14): la visita è ricorsiva e
+    /// un database costruito apposta causerebbe uno stack overflow, che chiude l'app senza appello.
+    /// </summary>
+    public const int MaxGroupDepth = 256;
+
     private static readonly HashSet<string> StandardFields = new(StringComparer.Ordinal)
     {
         "Title", "UserName", "Password", "URL", "Notes",
@@ -87,7 +93,7 @@ internal static class KeePassXcExportParser
         {
             if (reader.LocalName == "Group")
             {
-                ReadGroup(reader, state, parentPath: [], isRoot: true);
+                ReadGroup(reader, state, parentPath: [], isRoot: true, depth: 0);
             }
             else
             {
@@ -97,8 +103,13 @@ internal static class KeePassXcExportParser
     }
 
     /// <summary>KeePassXC scrive UUID e Name del gruppo prima dei gruppi figli e delle voci.</summary>
-    private static void ReadGroup(XmlReader reader, ParseState state, IReadOnlyList<string> parentPath, bool isRoot)
+    private static void ReadGroup(XmlReader reader, ParseState state, IReadOnlyList<string> parentPath, bool isRoot, int depth)
     {
+        if (depth > MaxGroupDepth)
+        {
+            throw new XmlException($"Gruppi annidati oltre {MaxGroupDepth} livelli.");
+        }
+
         var uuid = Guid.Empty;
         var name = string.Empty;
 
@@ -116,7 +127,7 @@ internal static class KeePassXcExportParser
                     reader.Skip();
                     break;
                 case "Group":
-                    ReadGroup(reader, state, ChildPath(parentPath, name, isRoot), isRoot: false);
+                    ReadGroup(reader, state, ChildPath(parentPath, name, isRoot), isRoot: false, depth + 1);
                     break;
                 case "Entry":
                     state.Entries.Add(ReadEntry(reader, ChildPath(parentPath, name, isRoot)));

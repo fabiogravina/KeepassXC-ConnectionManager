@@ -78,6 +78,80 @@ public sealed class PlatformTests : IDisposable
     }
 
     [Fact]
+    public void S8_executable_in_a_private_folder_is_safe()
+    {
+        Directory.CreateDirectory(_directory);
+        var file = Path.Combine(_directory, "tool.exe");
+        File.WriteAllText(file, string.Empty);
+
+        Assert.True(ExecutableSafety.IsSafe(file));
+    }
+
+    [Fact]
+    public void S8_any_other_principal_with_write_rights_makes_it_unsafe()
+    {
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "ACL: solo Windows");
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        Directory.CreateDirectory(_directory);
+        var file = Path.Combine(_directory, "tool.exe");
+        File.WriteAllText(file, string.Empty);
+
+        // Un utente qualsiasi (SID inventato), non uno dei gruppi «larghi» controllati prima di S8.
+        var info = new FileInfo(file);
+        var security = info.GetAccessControl();
+        security.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
+            new System.Security.Principal.SecurityIdentifier("S-1-5-21-1111111111-2222222222-3333333333-1001"),
+            System.Security.AccessControl.FileSystemRights.WriteData,
+            System.Security.AccessControl.AccessControlType.Allow));
+        info.SetAccessControl(security);
+
+        Assert.False(ExecutableSafety.IsSafe(file));
+    }
+
+    [Fact]
+    public void S8_parent_folder_that_others_can_rename_makes_it_unsafe()
+    {
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "ACL: solo Windows");
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var inner = Path.Combine(_directory, "app");
+        Directory.CreateDirectory(inner);
+        var file = Path.Combine(inner, "tool.exe");
+        File.WriteAllText(file, string.Empty);
+        Assert.True(ExecutableSafety.IsSafe(file));
+
+        // Chi può cancellare (rinominare) la cartella superiore può sostituire tutta la cartella dell'app.
+        var parent = new DirectoryInfo(_directory);
+        var security = parent.GetAccessControl();
+        security.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(
+            new System.Security.Principal.SecurityIdentifier(System.Security.Principal.WellKnownSidType.WorldSid, null),
+            System.Security.AccessControl.FileSystemRights.Delete,
+            System.Security.AccessControl.AccessControlType.Allow));
+        parent.SetAccessControl(security);
+
+        Assert.False(ExecutableSafety.IsSafe(file));
+    }
+
+    [Theory]
+    [InlineData(@"\\nas\backup\database.kdbx", true)]
+    [InlineData(@"\\?\UNC\nas\backup\database.kdbx", true)]
+    [InlineData(@"C:\Users\fabio\database.kdbx", false)]
+    [InlineData(@"\\?\C:\Users\fabio\database.kdbx", false)]
+    [InlineData("", false)]
+    public void S13_network_paths_are_recognized(string path, bool network)
+    {
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Percorsi UNC: solo Windows");
+        Assert.Equal(network, Kxc.App.Services.NetworkPaths.IsNetworkPath(path));
+    }
+
+    [Fact]
     public void Missing_executable_is_not_safe()
     {
         Assert.False(ExecutableSafety.IsSafe(Path.Combine(_directory, "manca.exe")));

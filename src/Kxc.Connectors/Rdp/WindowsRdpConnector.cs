@@ -30,6 +30,7 @@ public sealed class WindowsRdpConnector : IConnector
     private readonly ITcpConnectionProbe _probe;
     private readonly TimeProvider _time;
     private readonly string _mstscPath;
+    private readonly Func<string, bool> _isSafeExecutable;
     private readonly Lock _gate = new();
     private readonly HashSet<string> _pendingTargets = new(StringComparer.OrdinalIgnoreCase);
 
@@ -39,8 +40,10 @@ public sealed class WindowsRdpConnector : IConnector
         IProcessLauncher launcher,
         ITcpConnectionProbe probe,
         TimeProvider time,
-        string? mstscPath = null)
+        string? mstscPath = null,
+        Func<string, bool>? isSafeExecutable = null)
     {
+        _isSafeExecutable = isSafeExecutable ?? (_ => true);
         _vault = vault;
         _credentials = credentials;
         _launcher = launcher;
@@ -55,7 +58,8 @@ public sealed class WindowsRdpConnector : IConnector
 
     public string ClientName => "Desktop remoto (mstsc)";
 
-    public bool IsSupported => OperatingSystem.IsWindows() && File.Exists(_mstscPath);
+    /// <summary>mstsc presente e non sostituibile da altri utenti (S8).</summary>
+    public bool IsSupported => OperatingSystem.IsWindows() && File.Exists(_mstscPath) && _isSafeExecutable(_mstscPath);
 
     /// <summary>Task della rimozione della credenziale dell'ultimo avvio (per i test).</summary>
     internal Task? PendingCleanup { get; private set; }

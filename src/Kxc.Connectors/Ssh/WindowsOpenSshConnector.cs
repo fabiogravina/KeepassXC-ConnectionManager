@@ -27,6 +27,7 @@ public sealed class WindowsOpenSshConnector : IConnector
     private readonly string _clientPath;
     private readonly string? _terminalPath;
     private readonly string _askPassPath;
+    private readonly Func<string, bool> _isSafeExecutable;
     private readonly TimeSpan _channelLifetime;
     private readonly Lock _gate = new();
     private readonly List<AskPassServer> _servers = [];
@@ -40,8 +41,10 @@ public sealed class WindowsOpenSshConnector : IConnector
         string? clientPath = null,
         string? terminalPath = null,
         TimeSpan? channelLifetime = null,
-        OpenSshTerminal terminal = OpenSshTerminal.WindowsTerminal)
+        OpenSshTerminal terminal = OpenSshTerminal.WindowsTerminal,
+        Func<string, bool>? isSafeExecutable = null)
     {
+        _isSafeExecutable = isSafeExecutable ?? (_ => true);
         if (protocol is not (ConnectionProtocols.Ssh or ConnectionProtocols.Sftp))
         {
             throw new ArgumentOutOfRangeException(nameof(protocol), protocol, "Solo SSH o SFTP.");
@@ -68,8 +71,13 @@ public sealed class WindowsOpenSshConnector : IConnector
         + (Terminal == OpenSshTerminal.WindowsTerminal ? " in Windows Terminal" : " in console");
 
     /// <summary>Client e helper presenti; per Windows Terminal serve anche wt.exe.</summary>
+    /// <summary>
+    /// S8: client e terminale non devono essere sostituibili da altri utenti; per kxc-askpass vale
+    /// l'avviso sulla cartella dell'app (S5).
+    /// </summary>
     public bool IsSupported => OperatingSystem.IsWindows() && File.Exists(_clientPath) && File.Exists(_askPassPath)
-        && (Terminal == OpenSshTerminal.Console || _terminalPath is not null);
+        && _isSafeExecutable(_clientPath)
+        && (Terminal == OpenSshTerminal.Console || (_terminalPath is not null && _isSafeExecutable(_terminalPath)));
 
     /// <summary>Canale dell'ultimo avvio (per i test).</summary>
     internal AskPassServer? LastServer { get; private set; }

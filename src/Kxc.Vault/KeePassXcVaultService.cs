@@ -226,7 +226,8 @@ public sealed class KeePassXcVaultService : IVaultService, IDisposable
                 {
                     try
                     {
-                        snapshot = KeePassXcExportParser.Parse(stdout);
+                        // S6: password e allegati diventano spazi prima di arrivare al parser.
+                        snapshot = KeePassXcExportParser.Parse(new ProtectedValueFilterStream(stdout));
                     }
                     catch (XmlException ex)
                     {

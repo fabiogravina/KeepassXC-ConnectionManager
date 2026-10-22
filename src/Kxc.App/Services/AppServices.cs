@@ -74,7 +74,7 @@ internal static class AppServices
     {
         // L'helper di SSH_ASKPASS è distribuito accanto all'app.
         var askPass = Path.Combine(AppContext.BaseDirectory, "kxc-askpass.exe");
-        var winScp = WinScpConnector.Find();
+        var winScp = WinScpConnector.Find(ExecutableSafety.IsSafe);
 
         // L'ordine di registrazione è l'ordine di preferenza predefinito per ciascun protocollo.
         services.AddSingleton<IConnector>(sp => OpenSsh(sp, ConnectionProtocols.Ssh, askPass, OpenSshTerminal.WindowsTerminal));
@@ -95,7 +95,8 @@ internal static class AppServices
             sp.GetRequiredService<ISystemCredentialStore>(),
             sp.GetRequiredService<IProcessLauncher>(),
             sp.GetRequiredService<ITcpConnectionProbe>(),
-            sp.GetRequiredService<TimeProvider>()));
+            sp.GetRequiredService<TimeProvider>(),
+            isSafeExecutable: ExecutableSafety.IsSafe));
     }
 
     private static WindowsOpenSshConnector OpenSsh(IServiceProvider sp, ConnectionProtocols protocol, string askPass, OpenSshTerminal terminal) => new(
@@ -104,5 +105,6 @@ internal static class AppServices
         sp.GetRequiredService<IProcessLauncher>(),
         sp.GetRequiredService<IHostKeyConfirmation>(),
         askPass,
-        terminal: terminal);
+        terminal: terminal,
+        isSafeExecutable: ExecutableSafety.IsSafe);
 }

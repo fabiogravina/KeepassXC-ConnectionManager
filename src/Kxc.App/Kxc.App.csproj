@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Kxc.App</RootNamespace>
+    <AssemblyName>KXC-ConnectionManager</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Icona generata da build/icons/icon.cs. -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <NeutralLanguage>en</NeutralLanguage>
+    <!-- Piattaforme pubblicate; elencate qui perché i lock file NuGet le includano (SEC-09). -->
+    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kxc.Core\Kxc.Core.csproj" />
+    <!-- Solo per la composizione delle dipendenze: il resto dell'app usa le interfacce di Core. -->
+    <ProjectReference Include="..\Kxc.Platform\Kxc.Platform.csproj" />
+    <ProjectReference Include="..\Kxc.Vault\Kxc.Vault.csproj" />
+    <ProjectReference Include="..\Kxc.Connectors\Kxc.Connectors.csproj" />
+    <!-- kxc-askpass va copiato accanto all'app: è l'helper di SSH_ASKPASS. -->
+    <ProjectReference Include="..\Kxc.AskPass\Kxc.AskPass.csproj" ReferenceOutputAssembly="false" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\Strings.resx">
+      <StronglyTypedFileName>$(IntermediateOutputPath)Strings.Designer.cs</StronglyTypedFileName>
+      <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+      <StronglyTypedNamespace>Kxc.App.Resources</StronglyTypedNamespace>
+      <StronglyTypedClassName>Strings</StronglyTypedClassName>
+      <PublicClass>true</PublicClass>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Kxc.Tests" />
+  </ItemGroup>
+</Project>

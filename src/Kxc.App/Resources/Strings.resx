@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>KXC-ConnectionManager</value></data>
+  <data name="FirstRun_Title" xml:space="preserve"><value>Welcome</value></data>
+  <data name="FirstRun_Subtitle" xml:space="preserve"><value>KXC-ConnectionManager reads your KeePassXC database without changing it.</value></data>
+  <data name="FirstRun_Choose" xml:space="preserve"><value>Choose your KeePassXC database</value></data>
+  <data name="FirstRun_NoDbTitle" xml:space="preserve"><value>No database yet?</value></data>
+  <data name="FirstRun_NoDbSubtitle" xml:space="preserve"><value>You create it in KeePassXC, in three steps.</value></data>
+  <data name="FirstRun_Step1" xml:space="preserve"><value>Open KeePassXC and create a new database (KDBX 4 format recommended).</value></data>
+  <data name="FirstRun_Step2" xml:space="preserve"><value>Set a password and a key file, and save the file in a synced folder.</value></data>
+  <data name="FirstRun_Step3" xml:space="preserve"><value>Add entries with the tags rdp, ssh or sftp, then come back here.</value></data>
+  <data name="Unlock_Title" xml:space="preserve"><value>Unlock the database</value></data>
+  <data name="Unlock_ChangeDatabase" xml:space="preserve"><value>Change database</value></data>
+  <data name="Unlock_Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Unlock_Show" xml:space="preserve"><value>Show</value></data>
+  <data name="Unlock_Hide" xml:space="preserve"><value>Hide</value></data>
+  <data name="Unlock_KeyFile" xml:space="preserve"><value>Key file</value></data>
+  <data name="Unlock_KeyFileRemembered" xml:space="preserve"><value>remembered</value></data>
+  <data name="Unlock_KeyFileNone" xml:space="preserve"><value>No key file (optional)</value></data>
+  <data name="Unlock_KeyFileChoose" xml:space="preserve"><value>Choose</value></data>
+  <data name="Unlock_KeyFileChange" xml:space="preserve"><value>Change</value></data>
+  <data name="Unlock_KeyFileRemove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Unlock_Button" xml:space="preserve"><value>Unlock</value></data>
+  <data name="Unlock_Busy" xml:space="preserve"><value>Unlocking…</value></data>
+  <data name="Unlock_Hint" xml:space="preserve"><value>Press Enter to unlock. The password is never saved.</value></data>
+  <data name="Unlock_PasswordRequired" xml:space="preserve"><value>Enter the password, or choose a key file.</value></data>
+  <data name="Unlock_LockedByInactivity" xml:space="preserve"><value>Locked after {0} minutes of inactivity.</value></data>
+  <data name="Unlock_LockedBySystem" xml:space="preserve"><value>Locked together with the system.</value></data>
+  <data name="Main_SearchPlaceholder" xml:space="preserve"><value>Search for a host or a customer</value></data>
+  <data name="Main_Lock" xml:space="preserve"><value>Lock</value></data>
+  <data name="Main_Connect" xml:space="preserve"><value>Connect</value></data>
+  <data name="Main_ResultsFor" xml:space="preserve"><value>{0} results for «{1}»</value></data>
+  <data name="Main_OneResultFor" xml:space="preserve"><value>1 result for «{0}»</value></data>
+  <data name="Main_NoResultsFor" xml:space="preserve"><value>No results for «{0}». Press Esc to clear the search.</value></data>
+  <data name="Main_NoEntries" xml:space="preserve"><value>No entries with the tags rdp, ssh or sftp. Add them to your entries in KeePassXC and they will show up here.</value></data>
+  <data name="Main_Shortcuts" xml:space="preserve"><value>↑ ↓ move · Enter connect · Ctrl+Enter SFTP · Ctrl+D favorite · Esc clear</value></data>
+  <data name="Filter_All" xml:space="preserve"><value>All</value></data>
+  <data name="Filter_Favorites" xml:space="preserve"><value>Favorites</value></data>
+  <data name="Filter_Folders" xml:space="preserve"><value>Folders</value></data>
+  <data name="Section_Favorites" xml:space="preserve"><value>Favorites</value></data>
+  <data name="Section_Recent" xml:space="preserve"><value>Recent</value></data>
+  <data name="Favorite_Add" xml:space="preserve"><value>Add to favorites</value></data>
+  <data name="Favorite_Remove" xml:space="preserve"><value>Remove from favorites</value></data>
+  <data name="Detail_Protocol" xml:space="preserve"><value>Protocol</value></data>
+  <data name="Detail_Host" xml:space="preserve"><value>Host</value></data>
+  <data name="Detail_Port" xml:space="preserve"><value>Port</value></data>
+  <data name="Detail_User" xml:space="preserve"><value>User</value></data>
+  <data name="Detail_Domain" xml:space="preserve"><value>Domain</value></data>
+  <data name="Detail_LastConnection" xml:space="preserve"><value>Last connection</value></data>
+  <data name="Detail_Never" xml:space="preserve"><value>never</value></data>
+  <data name="Detail_SshKey" xml:space="preserve"><value>SSH key from the KeePassXC agent</value></data>
+  <data name="Detail_PasswordNote" xml:space="preserve"><value>The password stays in KeePassXC: it is never shown or copied.</value></data>
+  <data name="Warning_MissingHost" xml:space="preserve"><value>Host missing: add the Host field or the URL to this entry in KeePassXC.</value></data>
+  <data name="Warning_InvalidData" xml:space="preserve"><value>Invalid host, port, user or domain: fix them in KeePassXC.</value></data>
+  <data name="Warning_AmbiguousPath" xml:space="preserve"><value>Another entry has the same name in the same folder: rename one of them in KeePassXC.</value></data>
+  <data name="Status_Unlocked" xml:space="preserve"><value>Unlocked</value></data>
+  <data name="Status_LocksIn" xml:space="preserve"><value>locks in {0} min</value></data>
+  <data name="Status_LocksInUnderAMinute" xml:space="preserve"><value>locks in less than a minute</value></data>
+  <data name="Status_ConnectNotAvailable" xml:space="preserve"><value>{0} to {1}: not available on this system yet, coming in the next steps.</value></data>
+  <data name="HostKey_Title" xml:space="preserve"><value>First connection to this host</value></data>
+  <data name="HostKey_Message" xml:space="preserve"><value>This computer does not know the key of {0} yet. Before trusting it, check that the fingerprint below is the server's.</value></data>
+  <data name="HostKey_Fingerprint" xml:space="preserve"><value>{0} key fingerprint</value></data>
+  <data name="HostKey_RawPrompt" xml:space="preserve"><value>ssh question</value></data>
+  <data name="HostKey_HowToCheck" xml:space="preserve"><value>On the server you can see it with «ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub», or ask whoever manages it. If it does not match, cancel.</value></data>
+  <data name="HostKey_Trust" xml:space="preserve"><value>Trust and connect</value></data>
+  <data name="HostKey_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Status_Connecting" xml:space="preserve"><value>Starting {0} to {1}…</value></data>
+  <data name="Status_Started" xml:space="preserve"><value>{0} started to {1}.</value></data>
+  <data name="Error_ClientNotFound" xml:space="preserve"><value>{0} client not found. Install it or choose another client in Settings.</value></data>
+  <data name="Error_ProtocolNotSupported" xml:space="preserve"><value>{0} is not available on this system yet.</value></data>
+  <data name="Error_LaunchFailed" xml:space="preserve"><value>The {0} client did not start. Try again; if it happens again, check that it is installed correctly.</value></data>
+  <data name="Status_CannotConnect" xml:space="preserve"><value>Cannot connect to «{0}». {1}</value></data>
+  <data name="Error_CliNotFound" xml:space="preserve"><value>keepassxc-cli not found. Install KeePassXC 2.7.0 or later, or set the keepassxc-cli path in Settings.</value></data>
+  <data name="Error_CliVersionTooOld" xml:space="preserve"><value>KeePassXC is too old. Install KeePassXC 2.7.0 or later.</value></data>
+  <data name="Error_DatabaseNotFound" xml:space="preserve"><value>The database file is no longer at this path. Choose it again with «Change database».</value></data>
+  <data name="Error_KeyFileNotFound" xml:space="preserve"><value>Key file not found. Plug in the USB drive or choose the key file again.</value></data>
+  <data name="Error_UnsupportedFormat" xml:space="preserve"><value>This file is not a KeePassXC database (KDBX 3.1 or 4). Choose the right .kdbx file.</value></data>
+  <data name="Error_InvalidCredentials" xml:space="preserve"><value>Wrong password or key file. Try again.</value></data>
+  <data name="Error_EntryNotFound" xml:space="preserve"><value>Entry not found in the database. The database may have changed: try again after it reloads.</value></data>
+  <data name="Error_Locked" xml:space="preserve"><value>The database is locked. Unlock it to continue.</value></data>
+  <data name="Error_Timeout" xml:space="preserve"><value>keepassxc-cli did not answer in time. Try again; if it happens again, restart the app.</value></data>
+  <data name="Error_ReadFailed" xml:space="preserve"><value>Cannot read the database. Try again; if the file is syncing, wait a few seconds.</value></data>
+  <data name="FilePicker_DatabaseTitle" xml:space="preserve"><value>Choose the KeePassXC database</value></data>
+  <data name="FilePicker_KeyFileTitle" xml:space="preserve"><value>Choose the key file</value></data>
+  <data name="FilePicker_KdbxFilter" xml:space="preserve"><value>KeePassXC database</value></data>
+  <data name="FilePicker_AllFiles" xml:space="preserve"><value>All files</value></data>
+  <data name="Settings_Title" xml:space="preserve"><value>Settings</value></data>
+  <data name="Settings_Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Settings_Database" xml:space="preserve"><value>Database</value></data>
+  <data name="Settings_DatabaseFile" xml:space="preserve"><value>Database file</value></data>
+  <data name="Settings_KeyFile" xml:space="preserve"><value>Key file</value></data>
+  <data name="Settings_KeyFileNote" xml:space="preserve"><value>The key file is used from the next unlock.</value></data>
+  <data name="Settings_Change" xml:space="preserve"><value>Change</value></data>
+  <data name="Settings_Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Settings_None" xml:space="preserve"><value>None</value></data>
+  <data name="Settings_Clients" xml:space="preserve"><value>Clients</value></data>
+  <data name="Settings_ClientDetected" xml:space="preserve"><value>Detected on this system</value></data>
+  <data name="Settings_ClientMissing" xml:space="preserve"><value>No client found. Install {0}.</value></data>
+  <data name="Settings_InstallRdp" xml:space="preserve"><value>Windows Remote Desktop Connection</value></data>
+  <data name="Settings_InstallSsh" xml:space="preserve"><value>OpenSSH (optional Windows feature)</value></data>
+  <data name="Settings_InstallSftp" xml:space="preserve"><value>WinSCP or OpenSSH</value></data>
+  <data name="Settings_Cli" xml:space="preserve"><value>keepassxc-cli</value></data>
+  <data name="Settings_CliNote" xml:space="preserve"><value>Reads the database</value></data>
+  <data name="Settings_CliAuto" xml:space="preserve"><value>detected automatically</value></data>
+  <data name="Settings_CliUnsafe" xml:space="preserve"><value>This executable is in a folder other users can change: for safety it is not used. Choose the one installed with KeePassXC.</value></data>
+  <data name="Settings_CliReset" xml:space="preserve"><value>Automatic detection</value></data>
+  <data name="Settings_Security" xml:space="preserve"><value>Security</value></data>
+  <data name="Settings_AutoLock" xml:space="preserve"><value>Auto-lock</value></data>
+  <data name="Settings_AutoLockNote" xml:space="preserve"><value>It also locks when the screen is locked and on suspend.</value></data>
+  <data name="Settings_AfterMinutes" xml:space="preserve"><value>After {0} minutes</value></data>
+  <data name="Settings_AfterOneMinute" xml:space="preserve"><value>After 1 minute</value></data>
+  <data name="Settings_Appearance" xml:space="preserve"><value>Appearance</value></data>
+  <data name="Settings_Theme" xml:space="preserve"><value>Theme</value></data>
+  <data name="Theme_System" xml:space="preserve"><value>Same as system</value></data>
+  <data name="Theme_Light" xml:space="preserve"><value>Light</value></data>
+  <data name="Theme_Dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Language_System" xml:space="preserve"><value>Same as system</value></data>
+  <data name="Settings_LanguageNote" xml:space="preserve"><value>The language applies from the next start.</value></data>
+  <data name="Settings_DatabaseChanged" xml:space="preserve"><value>Database changed: unlock it to continue.</value></data>
+  <data name="Main_Settings" xml:space="preserve"><value>Settings (Ctrl+comma)</value></data>
+  <data name="FilePicker_CliTitle" xml:space="preserve"><value>Choose keepassxc-cli</value></data>
+  <data name="Status_Reloading" xml:space="preserve"><value>updating the list…</value></data>
+  <data name="Status_Reloaded" xml:space="preserve"><value>list updated at {0}</value></data>
+  <data name="Status_ReloadRetrying" xml:space="preserve"><value>the file is syncing, trying again shortly…</value></data>
+  <data name="Status_ReloadFailed" xml:space="preserve"><value>list not updated. {0}</value></data>
+  <data name="Status_CredentialsChanged" xml:space="preserve"><value>The database password or key file changed: unlock it again.</value></data>
+</root>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Dati inventati per i test. Password del database: "test"; key file: fixture.keyx -->
+<KeePassFile>
+	<Meta>
+		<Generator>KeePassXC</Generator>
+		<DatabaseName>Fixture KXC</DatabaseName>
+		<RecycleBinEnabled>True</RecycleBinEnabled>
+		<RecycleBinUUID>AAAAAAAAAAAAAAAAAAAACQ==</RecycleBinUUID>
+		<Binaries>
+			<Binary ID="0">RkFLRSBLRVkgLSBub24gw6ggdW5hIGNoaWF2ZSB2ZXJhCg==</Binary>
+		</Binaries>
+	</Meta>
+	<Root>
+		<Group>
+			<UUID>AAAAAAAAAAAAAAAAAAAAAQ==</UUID>
+			<Name>Root</Name>
+			<Group>
+				<UUID>AAAAAAAAAAAAAAAAAAAAAg==</UUID>
+				<Name>Clienti</Name>
+				<Group>
+					<UUID>AAAAAAAAAAAAAAAAAAAAAw==</UUID>
+					<Name>Rossi Srl</Name>
+					<Entry>
+						<UUID>AAAAAAAAAAAAAAAAAAABAQ==</UUID>
+						<Tags>rdp</Tags>
+						<Times><Expires>False</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+						<String><Key>Title</Key><Value>Server file</Value></String>
+						<String><Key>UserName</Key><Value>admin.rossi</Value></String>
+						<String><Key>Password</Key><Value ProtectInMemory="True">Pa55-Server-File!</Value></String>
+						<String><Key>URL</Key><Value/></String>
+						<String><Key>Notes</Key><Value>Server principale</Value></String>
+						<String><Key>Host</Key><Value>srv-file.rossi.example</Value></String>
+						<String><Key>Domain</Key><Value>ROSSI</Value></String>
+					</Entry>
+					<Entry>
+						<UUID>AAAAAAAAAAAAAAAAAAABAg==</UUID>
+						<Tags>SSH;Sftp</Tags>
+						<Times><Expires>False</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+						<String><Key>Title</Key><Value>Gateway</Value></String>
+						<String><Key>UserName</Key><Value>root</Value></String>
+						<String><Key>Password</Key><Value ProtectInMemory="True">gw-secret</Value></String>
+						<String><Key>URL</Key><Value>ssh://gw.rossi.example:2222</Value></String>
+						<String><Key>Notes</Key><Value/></String>
+						<Binary><Key>id_ed25519</Key><Value Ref="0"/></Binary>
+					</Entry>
+					<Entry>
+						<UUID>AAAAAAAAAAAAAAAAAAABAw==</UUID>
+						<Tags>RDP</Tags>
+						<Times><Expires>False</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+						<String><Key>Title</Key><Value>Contabilità</Value></String>
+						<String><Key>UserName</Key><Value>contabile</Value></String>
+						<String><Key>Password</Key><Value ProtectInMemory="True">p@ss "w0rd" ;\ è€ ' $HOME %PATH%</Value></String>
+						<String><Key>URL</Key><Value/></String>
+						<String><Key>Notes</Key><Value/></String>
+						<String><Key>Host</Key><Value>10.20.0.15</Value></String>
+						<String><Key>Port</Key><Value>3390</Value></String>
+					</Entry>
+				</Group>
+				<Group>
+					<UUID>AAAAAAAAAAAAAAAAAAAABA==</UUID>
+					<Name>Studio Rossi</Name>
+					<Entry>
+						<UUID>AAAAAAAAAAAAAAAAAAACAQ==</UUID>
+						<Tags>sftp</Tags>
+						<Times><Expires>False</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+						<String><Key>Title</Key><Value>NAS</Value></String>
+						<String><Key>UserName</Key><Value>backup</Value></String>
+						<String><Key>Password</Key><Value ProtectInMemory="True">nas-secret</Value></String>
+						<String><Key>URL</Key><Value>https://nas.studiorossi.example:5001/</Value></String>
+						<String><Key>Notes</Key><Value>Backup notturni</Value></String>
+					</Entry>
+				</Group>
+				<Group>
+					<UUID>AAAAAAAAAAAAAAAAAAAABQ==</UUID>
+					<Name>Bianchi SpA</Name>
+					<Entry>
+						<UUID>AAAAAAAAAAAAAAAAAAADAQ==</UUID>
+						<Tags>web</Tags>
+						<Times><Expires>False</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+						<String><Key>Title</Key><Value>Portale web</Value></String>
+						<String><Key>UserName</Key><Value>bianchi</Value></String>
+						<String><Key>Password</Key><Value ProtectInMemory="True">web-secret</Value></String>
+						<String><Key>URL</Key><Value>https://portale.bianchi.example</Value></String>
+						<String><Key>Notes</Key><Value/></String>
+					</Entry>
+					<Entry>
+						<UUID>AAAAAAAAAAAAAAAAAAADAg==</UUID>
+						<Tags>rdp</Tags>
+						<Times><Expires>True</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+						<String><Key>Title</Key><Value>Vecchio server</Value></String>
+						<String><Key>UserName</Key><Value>old</Value></String>
+						<String><Key>Password</Key><Value ProtectInMemory="True">old-secret</Value></String>
+						<String><Key>URL</Key><Value/></String>
+						<String><Key>Notes</Key><Value/></String>
+						<String><Key>Host</Key><Value>old.bianchi.example</Value></String>
+					</Entry>
+					<Entry>
+						<UUID>AAAAAAAAAAAAAAAAAAADAw==</UUID>
+						<Tags>ssh</Tags>
+						<Times><Expires>False</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+						<String><Key>Title</Key><Value>Senza host</Value></String>
+						<String><Key>UserName</Key><Value>nessuno</Value></String>
+						<String><Key>Password</Key><Value ProtectInMemory="True">x</Value></String>
+						<String><Key>URL</Key><Value/></String>
+						<String><Key>Notes</Key><Value/></String>
+					</Entry>
+					<Entry>
+						<UUID>AAAAAAAAAAAAAAAAAAADBA==</UUID>
+						<Tags>ssh</Tags>
+						<Times><Expires>False</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+						<String><Key>Title</Key><Value>Titolo "strano" / con slash</Value></String>
+						<String><Key>UserName</Key><Value>-oProxyCommand=calc</Value></String>
+						<String><Key>Password</Key><Value ProtectInMemory="True">x</Value></String>
+						<String><Key>URL</Key><Value/></String>
+						<String><Key>Notes</Key><Value/></String>
+						<String><Key>Host</Key><Value>-oProxyCommand=calc</Value></String>
+					</Entry>
+				</Group>
+			</Group>
+			<Group>
+				<UUID>AAAAAAAAAAAAAAAAAAAABg==</UUID>
+				<Name>Interni</Name>
+				<Entry>
+					<UUID>AAAAAAAAAAAAAAAAAAAEAQ==</UUID>
+					<Tags>rdp,ssh</Tags>
+					<Times><Expires>False</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+					<String><Key>Title</Key><Value>Router</Value></String>
+					<String><Key>UserName</Key><Value>admin</Value></String>
+					<String><Key>Password</Key><Value ProtectInMemory="True">router-secret</Value></String>
+					<String><Key>URL</Key><Value/></String>
+					<String><Key>Notes</Key><Value>Rack 3, armadio rosso</Value></String>
+					<String><Key>Host</Key><Value>192.168.1.1</Value></String>
+					<String><Key>ApiToken</Key><Value ProtectInMemory="True">custom-protected-secret</Value></String>
+					<History>
+						<Entry>
+							<UUID>AAAAAAAAAAAAAAAAAAAEAQ==</UUID>
+							<Tags>rdp</Tags>
+							<Times><Expires>False</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+							<String><Key>Title</Key><Value>Router vecchio</Value></String>
+							<String><Key>UserName</Key><Value>admin</Value></String>
+							<String><Key>Password</Key><Value ProtectInMemory="True">router-old-secret</Value></String>
+							<String><Key>URL</Key><Value/></String>
+							<String><Key>Notes</Key><Value/></String>
+						</Entry>
+					</History>
+				</Entry>
+			</Group>
+			<Group>
+				<UUID>AAAAAAAAAAAAAAAAAAAACQ==</UUID>
+				<Name>Cestino</Name>
+				<Entry>
+					<UUID>AAAAAAAAAAAAAAAAAAAFAQ==</UUID>
+					<Tags>rdp</Tags>
+					<Times><Expires>False</Expires><ExpiryTime>2020-01-01T00:00:00Z</ExpiryTime></Times>
+					<String><Key>Title</Key><Value>Eliminato</Value></String>
+					<String><Key>UserName</Key><Value>del</Value></String>
+					<String><Key>Password</Key><Value ProtectInMemory="True">del-secret</Value></String>
+					<String><Key>URL</Key><Value/></String>
+					<String><Key>Notes</Key><Value/></String>
+					<String><Key>Host</Key><Value>deleted.example</Value></String>
+				</Entry>
+			</Group>
+		</Group>
+	</Root>
+</KeePassFile>

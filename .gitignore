@@ -1,0 +1,12 @@
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+*.suo
+TestResults/
+*.DotSettings.user
+publish/
+
+# Database personale di prova con credenziali reali: mai nel repository.
+TestData/

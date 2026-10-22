@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=KXC-ConnectionManager
+GenericName=Connection manager
+GenericName[it]=Gestore connessioni
+Comment=Start RDP, SSH and SFTP sessions from your KeePassXC database
+Comment[it]=Avvia sessioni RDP, SSH e SFTP dal tuo database KeePassXC
+# Percorso dopo l'estrazione in ~/.local/opt/kxc-connectionmanager (vedi README).
+Exec=sh -c '"$HOME/.local/opt/kxc-connectionmanager/KXC-ConnectionManager"'
+Icon=kxc-connectionmanager
+Terminal=false
+Categories=Network;RemoteAccess;Utility;
+Keywords=rdp;ssh;sftp;keepassxc;remote;
+StartupWMClass=KXC-ConnectionManager

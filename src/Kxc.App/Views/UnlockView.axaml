@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Kxc.App.ViewModels"
+             xmlns:res="using:Kxc.App.Resources"
+             x:Class="Kxc.App.Views.UnlockView"
+             x:DataType="vm:UnlockViewModel">
+  <DockPanel>
+    <ScrollViewer>
+      <StackPanel MaxWidth="460" Margin="24,40" HorizontalAlignment="Center" Spacing="8">
+        <Border Width="64" Height="64" CornerRadius="16" Background="{DynamicResource KxcAccentSoft}" HorizontalAlignment="Left">
+          <PathIcon Data="{StaticResource IconLock}" Width="28" Height="28" Foreground="{DynamicResource KxcAccentText}" />
+        </Border>
+        <TextBlock Text="{x:Static res:Strings.Unlock_Title}" FontSize="30" FontWeight="Bold" Margin="0,16,0,0" />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <PathIcon Data="{StaticResource IconFile}" Width="16" Height="16" Foreground="{DynamicResource KxcMuted}" />
+          <TextBlock Text="{Binding DatabaseFileName}" Classes="mono" VerticalAlignment="Center" FontSize="15"
+                     ToolTip.Tip="{Binding DatabasePath}" />
+          <TextBlock Text="·" Classes="muted" VerticalAlignment="Center" />
+          <Button Classes="link" Content="{x:Static res:Strings.Unlock_ChangeDatabase}" Command="{Binding ChangeDatabaseCommand}" />
+        </StackPanel>
+
+        <TextBlock Text="{Binding InfoMessage}" IsVisible="{Binding InfoMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                   Classes="muted" TextWrapping="Wrap" Margin="0,8,0,0" />
+
+        <TextBlock Text="{x:Static res:Strings.Unlock_Password}" FontWeight="SemiBold" Margin="0,20,0,4" />
+        <TextBox x:Name="PasswordBox" Text="{Binding Password}" PasswordChar="•" RevealPassword="{Binding IsPasswordVisible}"
+                 FontSize="16" Padding="12,10" CornerRadius="8"
+                 AutomationProperties.Name="{x:Static res:Strings.Unlock_Password}">
+          <TextBox.InnerRightContent>
+            <Button Classes="link" Content="{Binding RevealButtonText}" Command="{Binding TogglePasswordVisibilityCommand}"
+                    Margin="0,0,6,0" VerticalAlignment="Center" />
+          </TextBox.InnerRightContent>
+        </TextBox>
+        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                   Classes="error" TextWrapping="Wrap" AutomationProperties.LiveSetting="Assertive" />
+
+        <TextBlock Text="{x:Static res:Strings.Unlock_KeyFile}" FontWeight="SemiBold" Margin="0,16,0,4" />
+        <Border Background="{DynamicResource KxcPane}" BorderBrush="{DynamicResource KxcBorder}" BorderThickness="1" CornerRadius="8" Padding="12,6">
+          <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+            <PathIcon Data="{StaticResource IconKey}" Width="18" Height="18" Foreground="{DynamicResource KxcMuted}" />
+            <TextBlock Grid.Column="1" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                       Text="{Binding KeyFileName, FallbackValue={x:Static res:Strings.Unlock_KeyFileNone}, TargetNullValue={x:Static res:Strings.Unlock_KeyFileNone}}"
+                       Classes.mono="{Binding HasKeyFile}" Classes.muted="{Binding !HasKeyFile}"
+                       ToolTip.Tip="{Binding KeyFilePath}" />
+            <TextBlock Grid.Column="2" Text="{x:Static res:Strings.Unlock_KeyFileRemembered}" Classes="muted" VerticalAlignment="Center"
+                       IsVisible="{Binding HasKeyFile}" />
+            <Button Grid.Column="3" Classes="link" Content="{Binding KeyFileButtonText}" Command="{Binding ChooseKeyFileCommand}" />
+            <Button Grid.Column="4" Classes="link" Content="{x:Static res:Strings.Unlock_KeyFileRemove}" Command="{Binding RemoveKeyFileCommand}"
+                    IsVisible="{Binding HasKeyFile}" />
+          </Grid>
+        </Border>
+
+        <Button Classes="primary" IsDefault="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                Padding="16,14" Margin="0,24,0,0" FontSize="16"
+                Content="{Binding UnlockButtonText}" Command="{Binding UnlockCommand}" />
+        <TextBlock Text="{x:Static res:Strings.Unlock_Hint}" Classes="muted" HorizontalAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0" />
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

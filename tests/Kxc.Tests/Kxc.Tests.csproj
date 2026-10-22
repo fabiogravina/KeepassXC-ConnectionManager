@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Kxc.Tests</RootNamespace>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- Nei test i nomi dei metodi descrivono il comportamento con underscore. -->
+    <NoWarn>$(NoWarn);CA1707;CA2007</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Kxc.Core\Kxc.Core.csproj" />
+    <ProjectReference Include="..\..\src\Kxc.Platform\Kxc.Platform.csproj" />
+    <ProjectReference Include="..\..\src\Kxc.Vault\Kxc.Vault.csproj" />
+    <ProjectReference Include="..\..\src\Kxc.App\Kxc.App.csproj" />
+    <ProjectReference Include="..\..\src\Kxc.Connectors\Kxc.Connectors.csproj" />
+    <ProjectReference Include="..\..\src\Kxc.AskPass\Kxc.AskPass.csproj" ReferenceOutputAssembly="false" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless.XUnit" />
+    <PackageReference Include="Avalonia.Skia" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Fixtures\fixture*.*" LinkBase="Fixtures" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

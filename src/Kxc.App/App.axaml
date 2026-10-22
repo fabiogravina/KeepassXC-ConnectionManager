@@ -1,0 +1,210 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Kxc.App"
+             x:Class="Kxc.App.App"
+             RequestedThemeVariant="Default">
+
+  <Application.DataTemplates>
+    <local:ViewLocator />
+  </Application.DataTemplates>
+
+  <Application.Resources>
+    <ResourceDictionary>
+      <!-- Colori con contrasto WCAG AA su entrambi i temi. Accento verde (variante V2, 22 ottobre 2026):
+           pulsanti #3D7A21 con testo bianco 5,24:1; il verde dell icona #6DAE45 col bianco darebbe 2,7:1. -->
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="KxcAccent" Color="#3D7A21" />
+          <SolidColorBrush x:Key="KxcAccentHover" Color="#2F6419" />
+          <SolidColorBrush x:Key="KxcOnAccent" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="KxcAccentSoft" Color="#E6F2DD" />
+          <SolidColorBrush x:Key="KxcAccentText" Color="#3D7A21" />
+          <SolidColorBrush x:Key="KxcAccentTextHover" Color="#2F6419" />
+          <SolidColorBrush x:Key="KxcAccentBorder" Color="#3D7A21" />
+          <SolidColorBrush x:Key="KxcSurface" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="KxcPane" Color="#F4F5F7" />
+          <SolidColorBrush x:Key="KxcBorder" Color="#D5D9E0" />
+          <SolidColorBrush x:Key="KxcText" Color="#1D2129" />
+          <SolidColorBrush x:Key="KxcMuted" Color="#575E6B" />
+          <SolidColorBrush x:Key="KxcError" Color="#B42318" />
+          <SolidColorBrush x:Key="KxcWarning" Color="#8A5300" />
+          <SolidColorBrush x:Key="KxcStar" Color="#A86A12" />
+          <SolidColorBrush x:Key="KxcOk" Color="#1E8E4E" />
+          <SolidColorBrush x:Key="KxcRdpSoft" Color="#E8EEFB" />
+          <SolidColorBrush x:Key="KxcRdpFg" Color="#2557D6" />
+          <SolidColorBrush x:Key="KxcSshSoft" Color="#E8EEFB" />
+          <SolidColorBrush x:Key="KxcSshFg" Color="#2557D6" />
+          <SolidColorBrush x:Key="KxcSftpSoft" Color="#FBEBD3" />
+          <SolidColorBrush x:Key="KxcSftpFg" Color="#8F5508" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="KxcAccent" Color="#8BCB62" />
+          <SolidColorBrush x:Key="KxcAccentHover" Color="#A3D981" />
+          <SolidColorBrush x:Key="KxcOnAccent" Color="#10200A" />
+          <SolidColorBrush x:Key="KxcAccentSoft" Color="#22361A" />
+          <SolidColorBrush x:Key="KxcAccentText" Color="#8BCB62" />
+          <SolidColorBrush x:Key="KxcAccentTextHover" Color="#A3D981" />
+          <SolidColorBrush x:Key="KxcAccentBorder" Color="#8BCB62" />
+          <SolidColorBrush x:Key="KxcSurface" Color="#17191E" />
+          <SolidColorBrush x:Key="KxcPane" Color="#1F2228" />
+          <SolidColorBrush x:Key="KxcBorder" Color="#353A44" />
+          <SolidColorBrush x:Key="KxcText" Color="#E8EAEE" />
+          <SolidColorBrush x:Key="KxcMuted" Color="#A3A9B5" />
+          <SolidColorBrush x:Key="KxcError" Color="#FF8A80" />
+          <SolidColorBrush x:Key="KxcWarning" Color="#F5B95C" />
+          <SolidColorBrush x:Key="KxcStar" Color="#F2B84B" />
+          <SolidColorBrush x:Key="KxcOk" Color="#4CC97F" />
+          <SolidColorBrush x:Key="KxcRdpSoft" Color="#1F2D4D" />
+          <SolidColorBrush x:Key="KxcRdpFg" Color="#8DADF7" />
+          <SolidColorBrush x:Key="KxcSshSoft" Color="#1F2D4D" />
+          <SolidColorBrush x:Key="KxcSshFg" Color="#8DADF7" />
+          <SolidColorBrush x:Key="KxcSftpSoft" Color="#3A2A12" />
+          <SolidColorBrush x:Key="KxcSftpFg" Color="#F2B866" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+
+      <!-- Accento del tema Fluent (focus, campo di ricerca, tendine): uguale a quello dell'app. -->
+      <Color x:Key="SystemAccentColor">#3D7A21</Color>
+      <Color x:Key="SystemAccentColorDark1">#2F6419</Color>
+      <Color x:Key="SystemAccentColorDark2">#255014</Color>
+      <Color x:Key="SystemAccentColorDark3">#1B3C0F</Color>
+      <Color x:Key="SystemAccentColorLight1">#4E9A2B</Color>
+      <Color x:Key="SystemAccentColorLight2">#6DAE45</Color>
+      <Color x:Key="SystemAccentColorLight3">#8BCB62</Color>
+
+      <!-- Icone 24x24, riempimento pari-dispari (F0). -->
+      <StreamGeometry x:Key="IconMonitor">F0 M3,4 H21 A1,1 0 0 1 22,5 V16 A1,1 0 0 1 21,17 H14 V19 H17 V21 H7 V19 H10 V17 H3 A1,1 0 0 1 2,16 V5 A1,1 0 0 1 3,4 Z M4,6 V15 H20 V6 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconTerminal">F0 M3,4 H21 A1,1 0 0 1 22,5 V19 A1,1 0 0 1 21,20 H3 A1,1 0 0 1 2,19 V5 A1,1 0 0 1 3,4 Z M4,6 V18 H20 V6 Z M6.5,8.5 L10,12 L6.5,15.5 L5.4,14.4 L7.8,12 L5.4,9.6 Z M11,14.3 H17 V15.8 H11 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconFolder">F0 M2,6 A2,2 0 0 1 4,4 H9 L11,6 H20 A2,2 0 0 1 22,8 V18 A2,2 0 0 1 20,20 H4 A2,2 0 0 1 2,18 Z M4,8 V18 H20 V8 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconStar">F1 M12,2 L15.09,8.26 L22,9.27 L17,14.14 L18.18,21.02 L12,17.77 L5.82,21.02 L7,14.14 L2,9.27 L8.91,8.26 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconStarOutline">F0 M12,2 L15.09,8.26 L22,9.27 L17,14.14 L18.18,21.02 L12,17.77 L5.82,21.02 L7,14.14 L2,9.27 L8.91,8.26 Z M12,6.5 L10.2,10.1 L6.2,10.7 L9.1,13.5 L8.4,17.5 L12,15.6 L15.6,17.5 L14.9,13.5 L17.8,10.7 L13.8,10.1 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconSearch">F0 M10,2 A8,8 0 0 1 16.32,14.9 L21.71,20.29 L20.29,21.71 L14.9,16.32 A8,8 0 1 1 10,2 Z M10,4 A6,6 0 1 0 10,16 A6,6 0 1 0 10,4 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconLock">F0 M12,2 A5,5 0 0 1 17,7 V10 H18 A2,2 0 0 1 20,12 V20 A2,2 0 0 1 18,22 H6 A2,2 0 0 1 4,20 V12 A2,2 0 0 1 6,10 H7 V7 A5,5 0 0 1 12,2 Z M12,4 A3,3 0 0 0 9,7 V10 H15 V7 A3,3 0 0 0 12,4 Z M6,12 V20 H18 V12 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconList">F1 M3,5 H21 V7 H3 Z M3,11 H21 V13 H3 Z M3,17 H21 V19 H3 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconKey">F0 M7,7 A5,5 0 1 0 7,17 A5,5 0 1 0 7,7 Z M7,10 A2,2 0 1 0 7,14 A2,2 0 1 0 7,10 Z M12,11 H22 V13 H12 Z M18,13 H20 V16 H18 Z M14.5,13 H16.5 V15 H14.5 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconFile">F0 M6,2 H14 L20,8 V20 A2,2 0 0 1 18,22 H6 A2,2 0 0 1 4,20 V4 A2,2 0 0 1 6,2 Z M6,4 V20 H18 V9 H13 V4 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconArrowRight">F1 M4,11 H16.2 L11.6,6.4 L13,5 L20,12 L13,19 L11.6,17.6 L16.2,13 H4 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconArrowLeft">F1 M20,11 H7.8 L12.4,6.4 L11,5 L4,12 L11,19 L12.4,17.6 L7.8,13 H20 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconSliders">F1 M3,6 H13 V8 H3 Z M17,6 H21 V8 H17 Z M13,4 H15 V10 H13 Z M3,16 H7 V18 H3 Z M11,16 H21 V18 H11 Z M7,14 H9 V20 H7 Z</StreamGeometry>
+      <StreamGeometry x:Key="IconWarning">F0 M12,2 L23,21 H1 Z M11,9 V15 H13 V9 Z M11,17 V19 H13 V17 Z</StreamGeometry>
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource KxcText}" />
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="Foreground" Value="{DynamicResource KxcMuted}" />
+    </Style>
+    <Style Selector="TextBlock.mono">
+      <Setter Property="FontFamily" Value="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" />
+    </Style>
+    <Style Selector="TextBlock.error">
+      <Setter Property="Foreground" Value="{DynamicResource KxcError}" />
+    </Style>
+    <Style Selector="TextBlock.warning">
+      <Setter Property="Foreground" Value="{DynamicResource KxcWarning}" />
+    </Style>
+    <Style Selector="TextBlock.section">
+      <Setter Property="Foreground" Value="{DynamicResource KxcMuted}" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="12,14,0,6" />
+    </Style>
+
+    <!-- Pulsante principale (Connetti, Sblocca). -->
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="{DynamicResource KxcAccent}" />
+      <Setter Property="Foreground" Value="{DynamicResource KxcOnAccent}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource KxcAccentHover}" />
+      <Setter Property="Foreground" Value="{DynamicResource KxcOnAccent}" />
+    </Style>
+    <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource KxcAccentHover}" />
+      <Setter Property="Foreground" Value="{DynamicResource KxcOnAccent}" />
+    </Style>
+
+    <!-- Pulsante secondario con bordo. -->
+    <Style Selector="Button.outline">
+      <Setter Property="Background" Value="{DynamicResource KxcSurface}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource KxcBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+
+    <!-- Pulsante di una riga selezionata: diventa principale. -->
+    <Style Selector="Button.outline.primary">
+      <Setter Property="Background" Value="{DynamicResource KxcAccent}" />
+      <Setter Property="Foreground" Value="{DynamicResource KxcOnAccent}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource KxcAccent}" />
+    </Style>
+
+    <!-- Pulsante come collegamento (Cambia database, Mostra). -->
+    <Style Selector="Button.link">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="4,2" />
+      <Setter Property="Foreground" Value="{DynamicResource KxcAccentText}" />
+    </Style>
+    <Style Selector="Button.link:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource KxcAccentTextHover}" />
+    </Style>
+
+    <!-- Pulsante con sola icona (stella). -->
+    <Style Selector="Button.icon">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="6" />
+    </Style>
+
+    <!-- Voce della colonna dei filtri. -->
+    <Style Selector="Button.filter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="Padding" Value="12,8" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <Style Selector="Button.filter.selected">
+      <Setter Property="Background" Value="{DynamicResource KxcAccentSoft}" />
+    </Style>
+    <Style Selector="Button.filter.selected TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource KxcAccentText}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- Righe della lista: lo stato selezionato lo disegna il bordo della riga. -->
+    <Style Selector="ListBox.entries ListBoxItem">
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Margin" Value="0,2" />
+    </Style>
+    <Style Selector="ListBox.entries ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.entries ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.row">
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="12,10" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover Border.row">
+      <Setter Property="Background" Value="{DynamicResource KxcPane}" />
+    </Style>
+    <Style Selector="Border.row.selected">
+      <Setter Property="BorderBrush" Value="{DynamicResource KxcAccentBorder}" />
+      <Setter Property="Background" Value="{DynamicResource KxcAccentSoft}" />
+    </Style>
+  </Application.Styles>
+</Application>

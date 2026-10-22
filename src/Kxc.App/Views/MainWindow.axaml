@@ -1,0 +1,14 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Kxc.App.ViewModels"
+        xmlns:res="using:Kxc.App.Resources"
+        x:Class="Kxc.App.Views.MainWindow"
+        x:DataType="vm:ShellViewModel"
+        Title="{x:Static res:Strings.AppTitle}"
+        Icon="/Assets/app-256.png"
+        MinWidth="720" MinHeight="480"
+        Width="1120" Height="720"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource KxcSurface}">
+  <ContentControl Content="{Binding CurrentPage}" />
+</Window>

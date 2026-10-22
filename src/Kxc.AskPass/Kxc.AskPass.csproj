@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Helper indicato in SSH_ASKPASS. Nessuna dipendenza: chiede la risposta a KXC-ConnectionManager
+    su un canale locale riservato all'utente e la scrive su stdout per ssh.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Kxc.AskPass</RootNamespace>
+    <AssemblyName>kxc-askpass</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\Kxc.Core\Connections\AskPassProtocol.cs" Link="AskPassProtocol.cs" />
+  </ItemGroup>
+</Project>

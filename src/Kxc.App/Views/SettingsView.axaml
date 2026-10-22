@@ -1,0 +1,148 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Kxc.App.ViewModels"
+             xmlns:res="using:Kxc.App.Resources"
+             x:Class="Kxc.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.group">
+      <Setter Property="BorderBrush" Value="{DynamicResource KxcBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="Padding" Value="20,6" />
+    </Style>
+    <Style Selector="TextBlock.groupTitle">
+      <Setter Property="FontSize" Value="17" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="0,20,0,8" />
+    </Style>
+    <Style Selector="Grid.setting">
+      <Setter Property="Margin" Value="0,10" />
+    </Style>
+    <Style Selector="Border.value">
+      <Setter Property="Background" Value="{DynamicResource KxcPane}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource KxcBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="12,8" />
+      <Setter Property="MinWidth" Value="240" />
+    </Style>
+    <Style Selector="ComboBox">
+      <Setter Property="MinWidth" Value="280" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Background="{DynamicResource KxcPane}" BorderBrush="{DynamicResource KxcBorder}" BorderThickness="0,0,0,1" Padding="16,10">
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button x:Name="BackButton" Classes="outline" Command="{Binding BackCommand}" ToolTip.Tip="Esc"
+                AutomationProperties.Name="{x:Static res:Strings.Settings_Back}" Padding="10,6">
+          <PathIcon Data="{StaticResource IconArrowLeft}" Width="16" Height="16" />
+        </Button>
+        <TextBlock Text="{x:Static res:Strings.Settings_Title}" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" />
+      </StackPanel>
+    </Border>
+
+    <ScrollViewer>
+      <StackPanel MaxWidth="760" Margin="24,4,24,32">
+        <!-- Database -->
+        <TextBlock Text="{x:Static res:Strings.Settings_Database}" Classes="groupTitle" />
+        <Border Classes="group">
+          <StackPanel>
+            <Grid Classes="setting" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+              <TextBlock Text="{x:Static res:Strings.Settings_DatabaseFile}" VerticalAlignment="Center" FontSize="15" />
+              <Border Grid.Column="1" Classes="value" ToolTip.Tip="{Binding DatabasePath}">
+                <TextBlock Text="{Binding DatabaseFileName}" Classes="mono" TextTrimming="CharacterEllipsis" />
+              </Border>
+              <Button Grid.Column="2" Classes="outline" Content="{x:Static res:Strings.Settings_Change}" Command="{Binding ChangeDatabaseCommand}" />
+            </Grid>
+            <Separator Background="{DynamicResource KxcBorder}" />
+            <Grid Classes="setting" ColumnDefinitions="*,Auto,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="10">
+              <TextBlock Text="{x:Static res:Strings.Settings_KeyFile}" VerticalAlignment="Center" FontSize="15" />
+              <Border Grid.Column="1" Classes="value" ToolTip.Tip="{Binding KeyFilePath}">
+                <TextBlock Text="{Binding KeyFileName, TargetNullValue={x:Static res:Strings.Settings_None}}" Classes.mono="{Binding HasKeyFile}" Classes.muted="{Binding !HasKeyFile}" TextTrimming="CharacterEllipsis" />
+              </Border>
+              <Button Grid.Column="2" Classes="outline" Content="{x:Static res:Strings.Settings_Change}" Command="{Binding ChangeKeyFileCommand}" />
+              <Button Grid.Column="3" Classes="link" Content="{x:Static res:Strings.Settings_Remove}" Command="{Binding RemoveKeyFileCommand}" IsVisible="{Binding HasKeyFile}" />
+              <TextBlock Grid.Row="1" Grid.ColumnSpan="4" Text="{x:Static res:Strings.Settings_KeyFileNote}" Classes="muted" Margin="0,6,0,0" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- Client -->
+        <TextBlock Text="{x:Static res:Strings.Settings_Clients}" Classes="groupTitle" />
+        <Border Classes="group">
+          <StackPanel>
+            <ItemsControl ItemsSource="{Binding Clients}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ClientChoiceViewModel">
+                  <StackPanel>
+                    <Grid Classes="setting" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding ProtocolName}" FontSize="15" />
+                        <TextBlock Text="{Binding Status}" Classes="muted" Classes.warning="{Binding !IsAvailable}" TextWrapping="Wrap" />
+                      </StackPanel>
+                      <ComboBox Grid.Column="1" ItemsSource="{Binding Options}" SelectedItem="{Binding Selected}" IsVisible="{Binding IsAvailable}"
+                                AutomationProperties.Name="{Binding ProtocolName}" />
+                    </Grid>
+                    <Separator Background="{DynamicResource KxcBorder}" />
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid Classes="setting" ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="10">
+              <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{x:Static res:Strings.Settings_Cli}" FontSize="15" />
+                <TextBlock Text="{x:Static res:Strings.Settings_CliNote}" Classes="muted" />
+              </StackPanel>
+              <Border Grid.Column="1" Classes="value" MaxWidth="340" ToolTip.Tip="{Binding CliDisplay}">
+                <TextBlock Text="{Binding CliDisplay}" Classes="mono" TextTrimming="CharacterEllipsis" />
+              </Border>
+              <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                <Button Classes="outline" Content="{x:Static res:Strings.Settings_Change}" Command="{Binding ChangeCliCommand}" />
+                <Button Classes="link" Content="{x:Static res:Strings.Settings_CliReset}" Command="{Binding ResetCliCommand}" IsVisible="{Binding HasConfiguredCli}" />
+              </StackPanel>
+              <TextBlock Grid.Row="1" Grid.ColumnSpan="3" Text="{Binding CliError}" Classes="error" TextWrapping="Wrap" Margin="0,6,0,0"
+                         IsVisible="{Binding CliError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            </Grid>
+          </StackPanel>
+        </Border>
+
+        <!-- Sicurezza -->
+        <TextBlock Text="{x:Static res:Strings.Settings_Security}" Classes="groupTitle" />
+        <Border Classes="group">
+          <Grid Classes="setting" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <StackPanel VerticalAlignment="Center">
+              <TextBlock Text="{x:Static res:Strings.Settings_AutoLock}" FontSize="15" />
+              <TextBlock Text="{x:Static res:Strings.Settings_AutoLockNote}" Classes="muted" TextWrapping="Wrap" />
+            </StackPanel>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding AutoLockOptions}" SelectedItem="{Binding SelectedAutoLock}"
+                      AutomationProperties.Name="{x:Static res:Strings.Settings_AutoLock}" />
+          </Grid>
+        </Border>
+
+        <!-- Aspetto -->
+        <TextBlock Text="{x:Static res:Strings.Settings_Appearance}" Classes="groupTitle" />
+        <Border Classes="group">
+          <StackPanel>
+            <Grid Classes="setting" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBlock Text="{x:Static res:Strings.Settings_Theme}" FontSize="15" VerticalAlignment="Center" />
+              <ComboBox Grid.Column="1" ItemsSource="{Binding ThemeOptions}" SelectedItem="{Binding SelectedTheme}"
+                        AutomationProperties.Name="{x:Static res:Strings.Settings_Theme}" />
+            </Grid>
+            <Separator Background="{DynamicResource KxcBorder}" />
+            <Grid Classes="setting" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="{x:Static res:Strings.Settings_Language}" FontSize="15" />
+                <TextBlock Text="{x:Static res:Strings.Settings_LanguageNote}" Classes="muted" />
+              </StackPanel>
+              <ComboBox Grid.Column="1" ItemsSource="{Binding LanguageOptions}" SelectedItem="{Binding SelectedLanguage}"
+                        AutomationProperties.Name="{x:Static res:Strings.Settings_Language}" />
+            </Grid>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</UserControl>

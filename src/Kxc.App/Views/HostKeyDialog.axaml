@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Kxc.App.ViewModels"
+        xmlns:res="using:Kxc.App.Resources"
+        x:Class="Kxc.App.Views.HostKeyDialog"
+        x:DataType="vm:HostKeyDialogViewModel"
+        Title="{x:Static res:Strings.HostKey_Title}"
+        Width="520" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{DynamicResource KxcSurface}">
+  <StackPanel Margin="24" Spacing="14">
+    <TextBlock Text="{x:Static res:Strings.HostKey_Title}" FontSize="20" FontWeight="SemiBold" />
+    <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+
+    <Border Background="{DynamicResource KxcPane}" BorderBrush="{DynamicResource KxcBorder}" BorderThickness="1" CornerRadius="8" Padding="14,10">
+      <StackPanel Spacing="4">
+        <TextBlock Text="{Binding FingerprintLabel}" Classes="muted" />
+        <SelectableTextBlock Text="{Binding Fingerprint}" FontFamily="Cascadia Mono,Consolas,DejaVu Sans Mono,monospace" FontSize="14" TextWrapping="Wrap"
+                             AutomationProperties.Name="{Binding FingerprintLabel}" />
+      </StackPanel>
+    </Border>
+
+    <TextBlock Text="{x:Static res:Strings.HostKey_HowToCheck}" Classes="muted" TextWrapping="Wrap" />
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,8,0,0">
+      <Button x:Name="CancelButton" Classes="outline" IsCancel="True" Padding="16,10" Content="{x:Static res:Strings.HostKey_Cancel}" />
+      <Button x:Name="TrustButton" Classes="primary" Padding="16,10" Content="{x:Static res:Strings.HostKey_Trust}" />
+    </StackPanel>
+  </StackPanel>
+</Window>

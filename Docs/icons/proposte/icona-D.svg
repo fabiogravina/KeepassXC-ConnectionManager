@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <path d="M60,8 H196 A52,52 0 0 1 248,60 V196 A52,52 0 0 1 196,248 H60 A52,52 0 0 1 8,196 V60 A52,52 0 0 1 60,8 Z" fill="#6DAE45" fill-rule="nonzero"/>
+  <path d="M70,92 A42,42 0 1 1 154,92 A42,42 0 1 1 70,92 Z M93.1,113 L130.9,113 L143.5,190 L80.5,190 Z" fill="#2E3A42" fill-rule="nonzero"/>
+  <path d="M134,184 A50,50 0 1 0 234,184 A50,50 0 1 0 134,184 Z" fill="#FFFFFF" fill-rule="nonzero"/>
+  <path d="M161,160 H207 A7,7 0 0 1 214,167 V195 A7,7 0 0 1 207,202 H161 A7,7 0 0 1 154,195 V167 A7,7 0 0 1 161,160 Z" fill="#2E3A42" fill-rule="nonzero"/>
+  <path d="M164,172 L174,180 L164,188" fill="none" fill-rule="nonzero" stroke="#6DAE45" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M179,186 H193 A1,1 0 0 1 194,187 V190 A1,1 0 0 1 193,191 H179 A1,1 0 0 1 178,190 V187 A1,1 0 0 1 179,186 Z" fill="#6DAE45" fill-rule="nonzero"/>
+  <path d="M179,202 H189 A1,1 0 0 1 190,203 V209 A1,1 0 0 1 189,210 H179 A1,1 0 0 1 178,209 V203 A1,1 0 0 1 179,202 Z" fill="#2E3A42" fill-rule="nonzero"/>
+  <path d="M171,208 H197 A3,3 0 0 1 200,211 V211 A3,3 0 0 1 197,214 H171 A3,3 0 0 1 168,211 V211 A3,3 0 0 1 171,208 Z" fill="#2E3A42" fill-rule="nonzero"/>
+</svg>

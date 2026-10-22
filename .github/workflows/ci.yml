@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      # keepassxc-cli per i test di integrazione e di sicurezza (senza, vengono saltati).
+      - name: Installa KeePassXC (Ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y keepassxc
+
+      - name: Installa KeePassXC (Windows)
+        if: runner.os == 'Windows'
+        run: choco install keepassxc -y --no-progress
+
+      - name: Restore
+        run: dotnet restore Kxc.sln --locked-mode
+
+      - name: Formattazione
+        run: dotnet format Kxc.sln --verify-no-changes --no-restore
+
+      - name: Build
+        run: dotnet build Kxc.sln --no-restore -c Release
+
+      - name: Test
+        run: dotnet test --solution Kxc.sln --no-build -c Release
+
+      - name: Vulnerabilità note nei pacchetti (SEC-09)
+        shell: bash
+        run: |
+          dotnet list Kxc.sln package --vulnerable --include-transitive | tee vulnerable.txt
+          ! grep -q "ha i seguenti pacchetti vulnerabili\|has the following vulnerable packages" vulnerable.txt

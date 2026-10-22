@@ -1,0 +1,12 @@
+# A capo LF per i file di testo, come in .editorconfig.
+* text=auto eol=lf
+
+# Script PowerShell eseguiti su Windows.
+*.ps1 text eol=crlf
+
+# Mai convertire: database e key file di prova, immagini, documenti.
+*.kdbx binary
+*.keyx binary
+*.png binary
+*.ico binary
+*.pdf binary

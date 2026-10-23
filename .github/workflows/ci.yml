@@ -26,12 +26,14 @@ jobs:
           global-json-file: global.json
 
       # keepassxc-cli per i test di integrazione e di sicurezza (senza, vengono saltati).
-      - name: Installa KeePassXC (Ubuntu)
+      # dbus-daemon serve ai test del blocco su Linux (S15), che altrimenti verrebbero saltati.
+      - name: Installa KeePassXC e dbus-daemon (Ubuntu)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y keepassxc=2.7.6+dfsg.1-1build3
+          sudo apt-get install -y keepassxc=2.7.6+dfsg.1-1build3 dbus-daemon
           keepassxc-cli --version
+          dbus-daemon --version
 
       - name: Installa KeePassXC (Windows)
         if: runner.os == 'Windows'

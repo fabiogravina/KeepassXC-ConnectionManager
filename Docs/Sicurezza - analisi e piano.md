@@ -40,9 +40,9 @@ Seguono quattro problemi di gravità media e una serie di rafforzamenti.
 | S12 | Bassa | **Corretto** (22/10, dump WER no) | Log di Avalonia su Trace anche in Release; dump in caso di crash |
 | S13 | Bassa | **Corretto** (22/10, avviso) | Database o key file su percorso UNC: autenticazione NTLM verso un server remoto |
 | S14 | Bassa | **Corretto** (22/10) | XML con gruppi annidati molto in profondità: stack overflow (crash) |
-| S15 | Bassa | Noto | Linux: nessun blocco con lo schermo e alla sospensione |
+| S15 | Bassa | **Corretto** (23/10, da provare su Kubuntu) | Linux: nessun blocco con lo schermo e alla sospensione |
 | S16 | **Media** | **In parte corretto** (22/10): manca il certificato | Catena di fornitura: Actions non fissate, KeePassXC in CI senza versione, pacchetti non firmati (Smart App Control blocca a volte `kxc-askpass` non firmato) |
-| S17 | Info | Da verificare | Percorso di `SSH_ASKPASS` con spazi e modo in cui OpenSSH per Windows lo avvia |
+| S17 | Info | **Verificato: nessun problema** (23/10) | Percorso di `SSH_ASKPASS` con spazi e modo in cui OpenSSH per Windows lo avvia |
 
 ---
 
@@ -251,6 +251,28 @@ Se l'app sta in una cartella con spazi (per esempio `C:\Program Files\...`), va 
   - **Azure Artifact Signing** (ex Trusted Signing) di Microsoft: servizio a pagamento mensile, con verifica dell'identità (da verificare la disponibilità per un privato in Italia);
   - **certificato OV di un'autorità** (Sectigo, DigiCert e altre): pagamento annuale, chiave privata su token o HSM.
 - `build/icons/icon.cs` scarica SkiaSharp fuori dai lock file: è solo uno strumento di sviluppo e non entra nei pacchetti, quindi resta così.
+
+**S15 e S17 il 23 ottobre 2026.**
+
+- **S15: corretto, da provare su Kubuntu.** [LinuxSessionEvents.cs](../src/Kxc.Platform/Session/LinuxSessionEvents.cs) blocca l'app con i segnali D-Bus di più fonti, perché gli ambienti desktop non usano tutti la stessa:
+  - logind: `PrepareForSleep(true)` per la sospensione; per il blocco, `Lock` e `LockedHint` della sessione dell'app (trovata con `GetSession("auto")`, poi con `XDG_SESSION_ID`); i segnali delle altre sessioni sono ignorati;
+  - salvaschermo di KDE (`org.freedesktop.ScreenSaver.ActiveChanged`) e di GNOME (`org.gnome.ScreenSaver.ActiveChanged`), accettati solo dal proprietario del nome sul bus.
+
+  La libreria è `Tmds.DBus.Protocol` 0.94.1 (MIT), la stessa che Avalonia porta già con sé: nessun codice di terze parti nuovo. Una fonte che manca (niente logind, nessun salvaschermo, bus non raggiungibile) non impedisce di ascoltare le altre. I test avviano un `dbus-daemon` privato con un client che impersona logind e i salvaschermi. Coprono:
+  - sospensione e risveglio;
+  - i due salvaschermi;
+  - `Lock` e `LockedHint`;
+  - le altre sessioni;
+  - un mittente impostore;
+  - servizi o bus mancanti.
+
+  Girano solo su Linux, quindi nella CI su Ubuntu. *Resta:* la prova sul desktop reale di Kubuntu (Meta+L, `loginctl lock-session`, sospensione).
+- **S17: verificato, nessun problema.** OpenSSH per Windows avvia `SSH_ASKPASS` con il percorso tra virgolette. La prova usa:
+  - come helper, una copia di `cmd.exe` nella cartella `a b`;
+  - come esca, una copia di `whoami.exe` chiamata `a.exe`, cioè il file che Windows proverebbe per primo con un percorso senza virgolette;
+  - una chiave cifrata con la riga che stampa l'helper.
+
+  `ssh-keygen -y` legge la chiave, quindi è partito l'helper giusto; con l'esca come helper fallisce. La prova è ripetuta da un test (`OpenSshAskPassPathTests`). ssh e ssh-keygen usano lo stesso codice per avviare l'helper.
 
 ## Piano di correzione
 

@@ -6,8 +6,15 @@ namespace Kxc.Platform.Session;
 
 public static class SystemSessionEvents
 {
-    public static ISystemSessionEvents Create() =>
-        OperatingSystem.IsWindows() ? new WindowsSessionEvents() : new UnsupportedSessionEvents();
+    public static ISystemSessionEvents Create()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return new WindowsSessionEvents();
+        }
+
+        return OperatingSystem.IsLinux() ? new LinuxSessionEvents() : new UnsupportedSessionEvents();
+    }
 }
 
 /// <summary>Blocco della sessione e sospensione su Windows.</summary>
@@ -48,10 +55,7 @@ public sealed class WindowsSessionEvents : ISystemSessionEvents
     }
 }
 
-/// <summary>
-/// Linux: il blocco dello schermo e la sospensione arrivano da D-Bus (logind e
-/// org.freedesktop.ScreenSaver) e saranno collegati dopo la verifica su Kubuntu.
-/// </summary>
+/// <summary>Sistemi senza eventi di blocco osservabili (né Windows né Linux).</summary>
 public sealed class UnsupportedSessionEvents : ISystemSessionEvents
 {
     public event EventHandler<SystemLockReason>? LockRequired

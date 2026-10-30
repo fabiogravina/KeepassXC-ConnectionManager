@@ -13,8 +13,8 @@
     <PackageVersion Include="Avalonia.Skia" Version="12.1.4" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <!-- Runtime (licenza MIT) -->
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" />
-    <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.14" />
+    <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="10.0.14" />
     <!-- D-Bus su Linux: la stessa versione che Avalonia porta già con sé. -->
     <PackageVersion Include="Tmds.DBus.Protocol" Version="0.94.1" />
     <!-- Test -->

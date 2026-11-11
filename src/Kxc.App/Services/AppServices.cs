@@ -54,6 +54,10 @@ internal static class AppServices
         {
             AddWindowsConnectors(services);
         }
+        else
+        {
+            AddLinuxConnectors(services);
+        }
 
         services.AddSingleton<IConnectionLauncher>(sp =>
         {
@@ -97,6 +101,33 @@ internal static class AppServices
             sp.GetRequiredService<ITcpConnectionProbe>(),
             sp.GetRequiredService<TimeProvider>(),
             isSafeExecutable: ExecutableSafety.IsSafe));
+    }
+
+    /// <summary>
+    /// Linux: OpenSSH (ssh e sftp) in ciascun terminale installato, prima quello del desktop in uso.
+    /// RDP non è ancora disponibile.
+    /// </summary>
+    [UnsupportedOSPlatform("windows")]
+    private static void AddLinuxConnectors(ServiceCollection services)
+    {
+        var askPass = Path.Combine(AppContext.BaseDirectory, "kxc-askpass");
+        var terminals = LinuxTerminal.Installed(ExecutableSafety.IsSafe);
+
+        foreach (var protocol in new[] { ConnectionProtocols.Ssh, ConnectionProtocols.Sftp })
+        {
+            foreach (var (terminal, path) in terminals)
+            {
+                services.AddSingleton<IConnector>(sp => new LinuxOpenSshConnector(
+                    protocol,
+                    sp.GetRequiredService<IVaultService>(),
+                    sp.GetRequiredService<IProcessLauncher>(),
+                    sp.GetRequiredService<IHostKeyConfirmation>(),
+                    askPass,
+                    terminal,
+                    path,
+                    isSafeExecutable: ExecutableSafety.IsSafe));
+            }
+        }
     }
 
     private static WindowsOpenSshConnector OpenSsh(IServiceProvider sp, ConnectionProtocols protocol, string askPass, OpenSshTerminal terminal) => new(
